@@ -1,0 +1,38 @@
+{
+    "name": "chaplean/dto-handler-bundle",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "description": "Loads the request content into a DTO",
+    "authors": [
+        {
+            "name": "Chaplean",
+            "homepage": "https://www.chaplean.coop"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Chaplean\\Bundle\\DtoHandlerBundle\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Chaplean\\Bundle\\DtoHandlerBundle\\": "Tests/"
+        }
+    },
+    "require": {
+        "php": ">=7.1",
+        "ext-json": "^1.5",
+        "doctrine/annotations": "^1.6",
+        "doctrine/orm": "^2.6",
+        "sensio/framework-extra-bundle": "^5.0",
+        "symfony/config": "^3.0 || ^4.0",
+        "symfony/console": "^3.0 || ^4.0",
+        "symfony/dependency-injection": "^3.0 || ^4.0",
+        "symfony/validator": "^3.0 || ^4.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.2.2",
+        "symfony/phpunit-bridge": "^4.3",
+        "php-mock/php-mock-mockery": "^1.3"
+    }
+}

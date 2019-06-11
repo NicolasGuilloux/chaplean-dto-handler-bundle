@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+    application:
+        container_name: dto-handler_bundle_app
+        build: .
+        volumes:
+            - .:/var/www/symfony
+            - ~/.composer:/root/.composer
+            - ~/.ssh:/root/.ssh

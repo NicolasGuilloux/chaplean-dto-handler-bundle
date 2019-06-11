@@ -1,0 +1,23 @@
+language: php
+sudo: required
+services:
+    - docker
+
+branches:
+    only:
+        - staging
+        - trying
+        - master
+
+before_script:
+    - docker-compose up --build -d
+    - docker-compose exec application composer install --prefer-dist --no-interaction
+
+script:
+    - docker-compose exec application phpdbg -qrr ./phpunit --configuration phpunit.xml.dist --colors=never --coverage-clover build/logs/clover.xml
+
+after_success:
+    - travis_retry docker-compose run --rm -e TRAVIS="TRAVIS" -e TRAVIS_JOB_ID="$TRAVIS_JOB_ID" -e TRAVIS_BRANCH="$TRAVIS_BRANCH" application php ./bin/php-coveralls -v
+
+after_script:
+    - docker-compose down

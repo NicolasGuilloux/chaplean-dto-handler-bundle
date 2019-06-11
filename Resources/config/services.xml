@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <defaults autowire="true" autoconfigure="true" public="false"/>
+
+        <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
+            <argument type="service" id="sensio_framework_extra.converter.manager" />
+            <tag name="request.param_converter" converter="data_transfer_object_converter" />
+        </service>
+
+        <service id="Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator" />
+    </services>
+</container>
