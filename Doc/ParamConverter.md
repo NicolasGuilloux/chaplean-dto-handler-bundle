@@ -10,7 +10,7 @@ By default, the converter will validate the output and throw a `400 Bad Request`
 
 ### Validation Groups
 
-To define the validation groups, you need to explicitly declare the `ParamConverter` in the controller action and ser the option `groups`. The following example uses the annotation configuration:
+To define the validation groups, you need to explicitly declare the `ParamConverter` in the controller action and set the option `groups`. The following example uses the annotation configuration:
 
 ```
 @ParamConverter(
