@@ -35,15 +35,15 @@ final class DummyDataTransferObject
 
 ## Table of content
 
-1. [Installation](#installation)
-2. [Getting started](#getting-started)
+1. [Installation](#1-installation)
+2. [Getting started](#2-getting-started)
     - [Set up the Data Transfer Object](Doc/DataTransferObject.md)
     - [Configure the ParamConverter](Doc/ParamConverter.md)
-3. [Example](#example)
-4. [Versioning](#versioning)
-5. [Contributing](#contributing)
-6. [Hacking](#hacking)
-7. [License](#license)
+3. [Example](#3-example)
+4. [Versioning](#4-versioning)
+5. [Contributing](#5-contributing)
+6. [Hacking](#6-hacking)
+7. [License](#7-license)
 
 
 ## 1. Installation
