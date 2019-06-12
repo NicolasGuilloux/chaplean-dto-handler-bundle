@@ -69,6 +69,30 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
     }
 
     /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::__construct()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     *
+     * @return void
+     */
+    public function testWithoutEntityManager(): void
+    {
+        $dto = new DummyDataTransferObject();
+        $constraint = new UniqueEntityData(
+            [
+                'entityClass' => DummyEntity::class,
+                'fields'      => ['property1', 'property2']
+            ]
+        );
+
+        $validator = new UniqueEntityDataValidator();
+        $validator->initialize($this->context);
+
+        $this->context->shouldNotReceive('buildViolation');
+
+        $validator->validate($dto, $constraint);
+    }
+
+    /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
      *
      * @return void

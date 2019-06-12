@@ -203,6 +203,8 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property2', 2);
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
+        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('parasite_', 'UselessAttribute');
 
         $this->manager->shouldReceive('apply')->once();
 

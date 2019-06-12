@@ -25,18 +25,18 @@ use Symfony\Component\Validator\ConstraintValidator;
 class UniqueEntityDataValidator extends ConstraintValidator
 {
     /**
-     * @var EntityManagerInterface
+     * @var EntityManagerInterface|null
      */
-    protected $em;
+    protected $entityManager;
 
     /**
      * UniqueEntityDataValidator constructor.
      *
-     * @param EntityManagerInterface $entityManager
+     * @param EntityManagerInterface|null $entityManager
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager = null)
     {
-        $this->em = $entityManager;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -47,7 +47,11 @@ class UniqueEntityDataValidator extends ConstraintValidator
      */
     public function validate($dto, Constraint $constraint): void
     {
-        $repository = $this->em->getRepository($constraint->entityClass);
+        if ($this->entityManager === null) {
+            return;
+        }
+
+        $repository = $this->entityManager->getRepository($constraint->entityClass);
         $criteria = [];
 
         foreach ($constraint->fields as $field) {
