@@ -73,6 +73,9 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
      *
      * @return void
+     *
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage No EntityManager available.
      */
     public function testWithoutEntityManager(): void
     {

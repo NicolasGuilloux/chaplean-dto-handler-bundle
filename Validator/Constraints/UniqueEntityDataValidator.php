@@ -44,11 +44,13 @@ class UniqueEntityDataValidator extends ConstraintValidator
      * @param Constraint|UniqueEntityData $constraint
      *
      * @return void
+     *
+     * @throws \InvalidArgumentException
      */
     public function validate($dto, Constraint $constraint): void
     {
         if ($this->entityManager === null) {
-            return;
+            throw new \InvalidArgumentException('No EntityManager available.');
         }
 
         $repository = $this->entityManager->getRepository($constraint->entityClass);
