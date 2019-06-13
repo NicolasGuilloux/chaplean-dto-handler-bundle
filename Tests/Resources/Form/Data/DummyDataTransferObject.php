@@ -16,6 +16,7 @@ use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject;
 
 /**
  * Class DummyDataTransferObject
@@ -78,4 +79,14 @@ final class DummyDataTransferObject
      * )
      */
     public $property6;
+
+    /**
+     * @var SubDataTransferObject
+     *
+     * @Assert\All(
+     *     @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject")
+     * )
+     * @Assert\Valid
+     */
+    public $property7;
 }

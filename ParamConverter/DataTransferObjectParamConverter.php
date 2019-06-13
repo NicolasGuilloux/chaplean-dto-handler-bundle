@@ -71,15 +71,22 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $reflectionClass = new \ReflectionClass($configuration->getClass());
 
         $uuid = \uniqid('', false);
-        $parent = $request->attributes->get($configuration->getName()) !== null ? $configuration->getName() : null;
+        // Null when the processed DTO is at the top level in case of nested DTO
+        $actualDtoName = $request->attributes->get($configuration->getName())
+            ? $configuration->getName()
+            : null
+        ;
 
-        $config = $this->autoConfigure($reflectionClass, $request, $uuid, $parent);
+        $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
         $this->manager->apply($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
         $request->attributes->set($configuration->getName(), $object);
 
-        $this->validate($object, $request, $options);
+        // Validate only the top level DTO
+        if ($actualDtoName === null) {
+            $this->validate($object, $request, $options);
+        }
 
         return true;
     }
@@ -147,7 +154,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
         $name = $propertyConfigurationModel->getName();
-        $content = $dtoName === null ? $request->request->get($name) : ($request->attributes->get($dtoName)[$name] ?? null);
+        $content = $dtoName
+            ? ($request->attributes->get($dtoName)[$name] ?? null)
+            : $request->request->get($name)
+        ;
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
             $name = $prefix . '_#_' . $propertyConfigurationModel->getName();

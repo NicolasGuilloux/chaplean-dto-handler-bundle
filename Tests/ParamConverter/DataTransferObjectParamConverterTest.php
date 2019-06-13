@@ -24,6 +24,7 @@ use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\DummyDataTransferObject;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject;
 
 /**
  * Class DataTransferObjectParamConverterTest
@@ -159,6 +160,13 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property2', 2);
         $request->request->set('property3', 'test');
         $request->request->set('property5', ['test']);
+        $request->request->set(
+            'property7',
+            [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+            ]
+        );
 
         $this->manager->shouldReceive('apply')->once();
 
@@ -169,6 +177,10 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $expectedDto->property2 = 2;
         $expectedDto->property3 = 'test';
         $expectedDto->property5 = ['test'];
+        $expectedDto->property7 = [
+            ['keyname' => 'test1'],
+            ['keyname' => 'test2'],
+        ];
 
         self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
     }
@@ -203,6 +215,14 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property2', 2);
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
+        $request->request->set(
+            'property7',
+            [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+            ]
+        );
+
         $request->attributes->set(0, 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
@@ -227,6 +247,72 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $expectedDto->property2 = 2;
         $expectedDto->property3 = $entity;
         $expectedDto->property5 = [$entity];
+        $expectedDto->property7 = [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+        ];
+
+        self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
+     */
+    public function testApplySubDto(): void
+    {
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+            ]
+        );
+
+        $entity = new DummyEntity();
+
+        $request = new Request();
+        $request->request->set('property1', 'Property 1');
+        $request->request->set('property2', 2);
+        $request->request->set('property3', $entity);
+        $request->request->set('property5', [$entity]);
+
+        $request->attributes->set('dataTransferObject', [
+            'property1' => 'Property 1',
+            'property2' => 2,
+            'property3' => $entity,
+            'property5' => [$entity],
+            'property7' => [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2']
+            ]
+        ]);
+        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('parasite_', 'UselessAttribute');
+
+        $this->manager->shouldReceive('apply')->once();
+
+        $this->validator->shouldNotReceive('validate');
+
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+
+        $expectedDto = new DummyDataTransferObject();
+        $expectedDto->property1 = 'Property 1';
+        $expectedDto->property2 = 2;
+        $expectedDto->property3 = $entity;
+        $expectedDto->property5 = [$entity];
+        $expectedDto->property7 = [
+            ['keyname' => 'test1'],
+            ['keyname' => 'test2'],
+        ];
 
         self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
     }
