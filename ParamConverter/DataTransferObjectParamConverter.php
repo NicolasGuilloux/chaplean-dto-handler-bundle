@@ -71,14 +71,22 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $reflectionClass = new \ReflectionClass($configuration->getClass());
 
         $uuid = \uniqid('', false);
+        // Null when the processed DTO is at the top level in case of nested DTO
+        $actualDtoName = $request->attributes->get($configuration->getName())
+            ? $configuration->getName()
+            : null
+        ;
 
-        $config = $this->autoConfigure($reflectionClass, $request, $uuid);
+        $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
         $this->manager->apply($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
         $request->attributes->set($configuration->getName(), $object);
 
-        $this->validate($object, $request, $options);
+        // Validate only the top level DTO
+        if ($actualDtoName === null) {
+            $this->validate($object, $request, $options);
+        }
 
         return true;
     }
@@ -109,12 +117,13 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param \ReflectionClass $reflectionClass
      * @param Request          $request
      * @param string           $prefix
+     * @param string|null      $dtoName
      *
      * @return array
      *
      * @throws AnnotationException
      */
-    private function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix): array
+    private function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
     {
         $paramConfiguration = [];
         $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
@@ -122,7 +131,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         foreach ($properties as $property) {
             $parameters = new PropertyConfigurationExtractor($property);
 
-            $paramConfiguration = $this->autoConfigureProperty($request, $paramConfiguration, $prefix, $parameters);
+            $paramConfiguration = $this->autoConfigureProperty($request, $paramConfiguration, $prefix, $dtoName, $parameters);
         }
 
         return $paramConfiguration;
@@ -132,6 +141,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param Request                        $request
      * @param array                          $paramConfiguration
      * @param string                         $prefix
+     * @param string|null                    $dtoName
      * @param PropertyConfigurationExtractor $propertyConfigurationModel
      *
      * @return array
@@ -140,12 +150,17 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         Request $request,
         array $paramConfiguration,
         string $prefix,
+        ?string $dtoName,
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
-        $content = $request->request->all()[$propertyConfigurationModel->getName()] ?? null;
+        $name = $propertyConfigurationModel->getName();
+        $content = $dtoName
+            ? ($request->attributes->get($dtoName)[$name] ?? null)
+            : $request->request->get($name)
+        ;
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
-            $name = $prefix . '_' . $propertyConfigurationModel->getName();
+            $name = $prefix . '_#_' . $propertyConfigurationModel->getName();
             $request->attributes->set($name, $content);
             $paramConfiguration[$name] = $propertyConfigurationModel->getParamConverterAnnotation();
             $paramConfiguration[$name]->setName($name);
@@ -234,6 +249,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $object = new $class();
 
         foreach ($request->attributes as $key => $attribute) {
+            if (!\is_string($key)) {
+                continue;
+            }
+
             $keyParts = \explode('_', $key);
             $prefixes = \array_slice($keyParts, 0, 2);
             $propertyName = \implode('_', \array_slice($keyParts, 2));
