@@ -14,9 +14,10 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Date;
+use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Type;
@@ -77,6 +78,10 @@ class PropertyConfigurationExtractor
         $arrayAnnotation = $annotationReader->getPropertyAnnotation($property, All::class);
         /** @var Type $typeAnnotation */
         $typeAnnotation = $annotationReader->getPropertyAnnotation($property, Type::class);
+        /** @var Date $dateAnnotation */
+        $dateAnnotation = $annotationReader->getPropertyAnnotation($property, Date::class);
+        /** @var DateTime $dateTimeAnnotation */
+        $dateTimeAnnotation = $annotationReader->getPropertyAnnotation($property, DateTime::class);
         /** @var MapTo $mapToAnnotation */
         $mapToAnnotation = $annotationReader->getPropertyAnnotation($property, MapTo::class);
         /** @var NotNull $notNullAnnotation */
@@ -94,7 +99,7 @@ class PropertyConfigurationExtractor
              $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
         }
 
-        if ($typeAnnotation !== null && class_exists($typeAnnotation->type)) {
+        if ($typeAnnotation !== null && \class_exists($typeAnnotation->type)) {
             $this->type = $typeAnnotation->type;
         }
     }

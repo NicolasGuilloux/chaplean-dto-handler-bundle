@@ -11,6 +11,8 @@ This version of the bundle requires Symfony 3.4+.
 The dto-handler-bundle loads the content of a request into a Data Transfer Object (DTO), mapping its properties such as entities from the database.
 It uses the `ParamConverterInterface` provided by the [SensioLabs Framework Extra Bundle](https://symfony.com/doc/4.0/bundles/SensioFrameworkExtraBundle/index.html) to automatically map the request content to the appropriate variables.
 
+## Quick Start
+
 The dto-handler-bundle is simple to use as it requires almost no configuration. To use it in a controller, simply declare the variable in the controller's argument:
 
 ```php

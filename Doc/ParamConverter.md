@@ -2,6 +2,21 @@
 
 The `data_transfer_object_converter` maps all public variables from the DTO to the appropriate `ParamConverter`.
 
+## Tagged DTO
+
+To recognize the DTO, the ParamConverter required the `@DTO` annotation or the class to be tagged with `app.data_transfer_object`. To learn more about the annotation, please go [here](DataTransferObject.md#mandatory-annotations).
+
+To declare all classes in a folder as DTO, you can set the following configuration. For the concerned class, you will no longer need to set the `@DTO` annotation.
+
+```yaml
+services:
+    ...
+    
+    AppBundle\DataTransferObject\:
+        resource: '../src/AppBundle/DataTransferObject/*'
+        tags: ['app.data_transfer_object']
+```
+
 ## Validation
 
 ### Default behaviour
