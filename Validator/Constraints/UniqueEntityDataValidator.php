@@ -11,7 +11,10 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints;
 
+use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
@@ -30,6 +33,11 @@ class UniqueEntityDataValidator extends ConstraintValidator
     protected $entityManager;
 
     /**
+     * @var ExpressionLanguage
+     */
+    protected $expressionLanguage;
+
+    /**
      * UniqueEntityDataValidator constructor.
      *
      * @param EntityManagerInterface|null $entityManager
@@ -37,6 +45,7 @@ class UniqueEntityDataValidator extends ConstraintValidator
     public function __construct(EntityManagerInterface $entityManager = null)
     {
         $this->entityManager = $entityManager;
+        $this->expressionLanguage = new ExpressionLanguage();
     }
 
     /**
@@ -54,13 +63,52 @@ class UniqueEntityDataValidator extends ConstraintValidator
         }
 
         $repository = $this->entityManager->getRepository($constraint->entityClass);
+        $criteria = self::buildCriteria($repository, $dto, $constraint);
+
+        if ($criteria === null) {
+            return;
+        }
+
+        $entity = $repository->findOneBy($criteria);
+
+        if ($entity === null) {
+            return;
+        }
+
+        $exceptProperty = $constraint->except;
+        $exceptEntity = null;
+
+        if ($exceptProperty !== null) {
+            $exceptEntity = $this->expressionLanguage->evaluate(
+                $exceptProperty,
+                ['this' => $dto]
+            );
+        }
+
+        if ($exceptEntity === null || $exceptEntity !== $entity) {
+            $this->context
+                ->buildViolation($constraint->message)
+                ->atPath($constraint->fields[0])
+                ->addViolation();
+        }
+    }
+
+    /**
+     * @param ObjectRepository $repository
+     * @param                  $dto
+     * @param UniqueEntityData $constraint
+     *
+     * @return array|null
+     */
+    private static function buildCriteria(ObjectRepository $repository, $dto, UniqueEntityData $constraint): ?array
+    {
         $criteria = [];
 
         foreach ($constraint->fields as $field) {
             $fieldValue = $dto->{$field};
 
             if ($fieldValue === null) {
-                return;
+                return null;
             }
 
             if (is_object($fieldValue)) {
@@ -74,16 +122,6 @@ class UniqueEntityDataValidator extends ConstraintValidator
             }
         }
 
-        $entity = $repository->findOneBy($criteria);
-        $exceptProperty = $constraint->except;
-        $exceptEntity = null;
-
-        if ($exceptProperty !== null && property_exists(get_class($dto), $exceptProperty)) {
-            $exceptEntity = $dto->$exceptProperty;
-        }
-
-        if ($entity !== null && ($exceptEntity === null || $exceptEntity->getId() !== $entity->getId())) {
-            $this->context->buildViolation($constraint->message)->atPath($constraint->fields[0])->addViolation();
-        }
+        return $criteria;
     }
 }

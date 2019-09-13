@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data;
+namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class SubDataTransferObject.
  *
- * @package   Chaplean\Bundle\DtoHandlerBundle\Tests\Resources\Form\Data
+ * @package   Chaplean\Bundle\DtoHandlerBundle\Tests\Resources\DTO
  * @author    Nicolas - Chaplean <nicolas@chaplean.coop>
  * @copyright 2014 - 2019 Chaplean (https://www.chaplean.coop)
  *

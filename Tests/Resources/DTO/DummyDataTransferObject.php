@@ -9,19 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data;
+namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 
 /**
  * Class DummyDataTransferObject
  *
- * @package   Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data
+ * @package   Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO
  * @author    Nicolas - Chaplean <nicolas@chaplean.coop>
  * @copyright 2014 - 2019 Chaplean (https://www.chaplean.coop)
  *
@@ -84,9 +84,24 @@ final class DummyDataTransferObject
      * @var SubDataTransferObject
      *
      * @Assert\All(
-     *     @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject")
+     *     @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject")
      * )
      * @Assert\Valid
      */
     public $property7;
+
+    /**
+     * @var DummyEntity
+     *
+     * @Assert\NotNull
+     * @Assert\DateTime
+     */
+    public $property8;
+
+    /**
+     * @var DummyEntity
+     *
+     * @Assert\Date
+     */
+    public $property9;
 }

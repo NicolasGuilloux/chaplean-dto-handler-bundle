@@ -13,5 +13,9 @@
         </service>
 
         <service id="Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator" />
+
+        <service id="Chaplean\Bundle\DtoHandlerBundle\EventListener\DataTransferObjectValidationExceptionSubscriber">
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 </container>
