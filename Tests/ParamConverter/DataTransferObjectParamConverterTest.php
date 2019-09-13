@@ -41,11 +41,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     private $dataTransferObjectParamConverter;
 
     /**
-     * @var ContainerBuilder|MockInterface
-     */
-    protected $containerBuilder;
-
-    /**
      * @var ParamConverterManager|MockInterface
      */
     private $manager;
@@ -62,14 +57,12 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     {
         parent::setUp();
 
-        $this->containerBuilder = \Mockery::mock(ContainerBuilder::class);
         $this->manager = \Mockery::mock(ParamConverterManager::class);
         $this->validator = \Mockery::mock(ValidatorInterface::class);
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
 
         $this->dataTransferObjectParamConverter = new DataTransferObjectParamConverter(
-            $this->containerBuilder,
             $this->manager,
             $this->validator
         );
@@ -87,6 +80,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::setTaggedDtoServices()
      *
      * @return void
      *
@@ -101,11 +95,8 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->containerBuilder
-            ->shouldReceive('findTaggedServiceIds')
-            ->once()
-            ->with('app.data_transfer_object')
-            ->andReturn(
+        $this->dataTransferObjectParamConverter
+            ->setTaggedDtoServices(
                 [
                     DummyDataTransferObject::class => 'app.data_transfer_object'
                 ]
@@ -130,12 +121,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->containerBuilder
-            ->shouldReceive('findTaggedServiceIds')
-            ->once()
-            ->with('app.data_transfer_object')
-            ->andReturn([]);
-
         self::assertTrue($this->dataTransferObjectParamConverter->supports($configurationSupported));
     }
 
@@ -154,12 +139,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
                 'class' => DummyEntity::class,
             ]
         );
-
-        $this->containerBuilder
-            ->shouldReceive('findTaggedServiceIds')
-            ->once()
-            ->with('app.data_transfer_object')
-            ->andReturn([]);
 
         self::assertFalse($this->dataTransferObjectParamConverter->supports($configurationUnsupported));
     }

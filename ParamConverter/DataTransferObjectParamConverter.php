@@ -61,6 +61,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     ) {
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
+        $this->taggedDtoClasses = [];
     }
 
     /**
