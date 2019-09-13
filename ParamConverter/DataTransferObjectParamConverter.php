@@ -35,9 +35,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class DataTransferObjectParamConverter implements ParamConverterInterface
 {
     /**
-     * @var ContainerBuilder
+     * @var array
      */
-    protected $containerBuilder;
+    protected $taggedDtoClasses;
 
     /**
      * @var ParamConverterManager
@@ -52,18 +52,27 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
-     * @param ContainerBuilder        $containerBuilder
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
-        ContainerBuilder $containerBuilder,
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
-        $this->containerBuilder = $containerBuilder;
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
+    }
+
+    /**
+     * @param array $taggedServices
+     *
+     * @return self
+     */
+    public function setTaggedDtoServices(array $taggedServices): self
+    {
+        $this->taggedDtoClasses = \array_keys($taggedServices);
+
+        return $this;
     }
 
     /**
@@ -117,9 +126,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return false;
         }
 
-        $dtoServices = $this->containerBuilder->findTaggedServiceIds('app.data_transfer_object');
-
-        if (\array_key_exists($class, $dtoServices)) {
+        if (\in_array($class, $this->taggedDtoClasses, true)) {
             return true;
         }
 
