@@ -18,8 +18,7 @@ use Symfony\Component\Validator\ConstraintViolationList;
  * Class DataTransferObjectValidationExceptionSubscriberTest
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\Tests\EventListener
- * @author    Nicolas Guilloux <nguilloux@richcongress.com>
- * @copyright 2014 - 2019 RichCongress (https://www.richcongress.com)
+ * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
 class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCase
 {

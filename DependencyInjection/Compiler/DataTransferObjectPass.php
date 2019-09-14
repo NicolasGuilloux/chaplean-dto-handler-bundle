@@ -10,8 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  * Class DataTransferObjectPass
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\DependencyInjection\Compiler
- * @author    Nicolas Guilloux <nguilloux@richcongress.com>
- * @copyright 2014 - 2019 RichCongress (https://www.richcongress.com)
+ * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
 class DataTransferObjectPass implements CompilerPassInterface
 {

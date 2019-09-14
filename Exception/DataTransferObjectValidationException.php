@@ -11,8 +11,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
  * Class DataTransferObjectValidationException
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\Exception
- * @author    Nicolas Guilloux <nguilloux@richcongress.com>
- * @copyright 2014 - 2019 RichCongress (https://www.richcongress.com)
+ * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
 class DataTransferObjectValidationException extends HttpException
 {

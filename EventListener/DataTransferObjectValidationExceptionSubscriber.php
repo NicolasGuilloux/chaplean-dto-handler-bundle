@@ -12,8 +12,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * Class DataTransferObjectValidationExceptionSubscriber
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\EventListener
- * @author    Nicolas Guilloux <nguilloux@richcongress.com>
- * @copyright 2014 - 2019 RichCongress (https://www.richcongress.com)
+ * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
 class DataTransferObjectValidationExceptionSubscriber implements EventSubscriberInterface
 {

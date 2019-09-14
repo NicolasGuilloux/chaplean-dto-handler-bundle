@@ -11,8 +11,7 @@ use Symfony\Component\Validator\ConstraintViolationList;
  * Class DataTransferObjectValidationExceptionTest
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\Tests\Exception
- * @author    Nicolas Guilloux <nguilloux@richcongress.com>
- * @copyright 2014 - 2019 RichCongress (https://www.richcongress.com)
+ * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
 class DataTransferObjectValidationExceptionTest extends TestCase
 {
