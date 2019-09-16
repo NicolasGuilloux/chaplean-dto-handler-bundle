@@ -2,7 +2,7 @@
 
 ## Mandatory annotations
 
-To recognize the Data Transfer Object, the `ParamConverter` requires the class annotation `@DTO` to be set.
+To recognize the Data Transfer Object, the `ParamConverter` requires the class annotation `@DTO` to be set or the class to be tagged as `app.data_transfer_object`. Here, we only use the `DTO` annotation but you can find more information about the tag [here](ParamConverter.md#tagged-dto).
 
 To correctly extract the appropriate values to the variables, the `ParamConverter` requires to explicitly declare the type using the `Type` assertion of the Symfony validation component.
 
@@ -75,7 +75,7 @@ final class DummyDataTransferObject
 }
 ```
 
-An entity can be accepted using the `except` parameter which will tolerate to break the unicity restriction if the found entity is the same as the one in the `except`:
+An entity can be accepted using the `except` parameter which will tolerate to break the unicity restriction if the found entity is the same as the one in the `except`. The `except` option uses the Expression language, so `this` reffers to the DTO and `this.targetEntity` reffers to the value of the `$targetEntity` property.
 
 ```php
 /**
@@ -84,7 +84,7 @@ An entity can be accepted using the `except` parameter which will tolerate to br
  * @UniqueEntityData(
  *     fields={"property1", "property2"},
  *     entityClass="App\Entity\DummyEntity",
- *     except="targetEntity"
+ *     except="this.targetEntity"
  * )
  */
 final class DummyDataTransferObject

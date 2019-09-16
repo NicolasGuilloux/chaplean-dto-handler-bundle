@@ -7,7 +7,7 @@ use Doctrine\Common\Annotations\AnnotationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\DummyDataTransferObject;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 
 /**
  * Class PropertyConfigurationExtractorTest

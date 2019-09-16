@@ -25,6 +25,7 @@
 
             <exclude>
                 <file>phpunit-filter.php</file>
+                <file>ChapleanDtoHandlerBundle.php</file>
                 <directory>DependencyInjection</directory>
                 <directory>Resources</directory>
                 <directory>Tests</directory>

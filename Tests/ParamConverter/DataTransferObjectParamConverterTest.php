@@ -18,13 +18,13 @@ use Mockery\MockInterface;
 use phpmock\mockery\PHPMockery;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\DummyDataTransferObject;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\SubDataTransferObject;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 
 /**
  * Class DataTransferObjectParamConverterTest
@@ -76,6 +76,33 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     public function testConstructor(): void
     {
         self::assertInstanceOf(DataTransferObjectParamConverter::class, $this->dataTransferObjectParamConverter);
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::setTaggedDtoServices()
+     *
+     * @return void
+     *
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function testSupportsClassWithTag(): void
+    {
+        $configurationSupported = new ParamConverter(
+            [
+                'class' => DummyDataTransferObject::class,
+            ]
+        );
+
+        $this->dataTransferObjectParamConverter
+            ->setTaggedDtoServices(
+                [
+                    DummyDataTransferObject::class => 'app.data_transfer_object'
+                ]
+            );
+
+        self::assertTrue($this->dataTransferObjectParamConverter->supports($configurationSupported));
     }
 
     /**
@@ -394,8 +421,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @throws \ReflectionException
      * @throws AnnotationException
      *
-     * @expectedException \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-     * @expectedExceptionMessage {"Property Path":"ERROR"}
+     * @expectedException \Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException
      */
     public function testApplyWithValidationWithoutHandler(): void
     {
@@ -418,13 +444,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $this->manager->shouldReceive('apply')->once();
 
         $violation = \Mockery::mock(ConstraintViolation::class);
-        $violation->shouldReceive('getPropertyPath')
-            ->once()
-            ->andReturn('Property Path');
-        $violation->shouldReceive('getMessage')
-            ->once()
-            ->andReturn('ERROR');
-
         $violations = new ConstraintViolationList();
         $violations->add($violation);
 

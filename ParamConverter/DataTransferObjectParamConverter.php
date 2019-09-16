@@ -13,11 +13,13 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor;
+use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -33,14 +35,19 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class DataTransferObjectParamConverter implements ParamConverterInterface
 {
     /**
+     * @var array
+     */
+    protected $taggedDtoClasses;
+
+    /**
      * @var ParamConverterManager
      */
-    private $manager;
+    protected $manager;
 
     /**
      * @var ValidatorInterface
      */
-    private $validator;
+    protected $validator;
 
     /**
      * DataTransferObjectParamConverter constructor.
@@ -54,6 +61,19 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     ) {
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
+        $this->taggedDtoClasses = [];
+    }
+
+    /**
+     * @param array $taggedServices
+     *
+     * @return self
+     */
+    public function setTaggedDtoServices(array $taggedServices): self
+    {
+        $this->taggedDtoClasses = \array_keys($taggedServices);
+
+        return $this;
     }
 
     /**
@@ -101,11 +121,17 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     public function supports(ParamConverter $configuration): bool
     {
-        if ($configuration->getClass() === null) {
+        $class = $configuration->getClass();
+
+        if ($class === null) {
             return false;
         }
 
-        $propertyReflectionClass = new \ReflectionClass($configuration->getClass());
+        if (\in_array($class, $this->taggedDtoClasses, true)) {
+            return true;
+        }
+
+        $propertyReflectionClass = new \ReflectionClass($class);
 
         $annotationReader = new AnnotationReader();
         $typeAnnotation = $annotationReader->getClassAnnotation($propertyReflectionClass, DTO::class);
@@ -296,14 +322,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $violations = $this->validator->validate($object, null, $groups);
 
         if (!$validationHandler && $violations->count() > 0) {
-            $errors = [];
-
-            /** @var ConstraintViolation $violation */
-            foreach ($violations as $violation) {
-                $errors[$violation->getPropertyPath()] = $violation->getMessage();
-            }
-
-            throw new BadRequestHttpException(\json_encode($errors));
+            throw new DataTransferObjectValidationException($violations);
         }
 
         $request->attributes->set(

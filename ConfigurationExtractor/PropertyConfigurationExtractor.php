@@ -14,7 +14,6 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -94,7 +93,7 @@ class PropertyConfigurationExtractor
              $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
         }
 
-        if ($typeAnnotation !== null && class_exists($typeAnnotation->type)) {
+        if ($typeAnnotation !== null && \class_exists($typeAnnotation->type)) {
             $this->type = $typeAnnotation->type;
         }
     }

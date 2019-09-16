@@ -20,7 +20,7 @@ use Mockery\MockInterface;
 use Symfony\Component\Validator\Context\ExecutionContext;
 use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Form\Data\DummyDataTransferObject;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 
 /**
  * Class UniqueEntityDataValidatorTest
@@ -69,7 +69,6 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
     }
 
     /**
-     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
      *
      * @return void
@@ -97,6 +96,7 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::buildCriteria()
      *
      * @return void
      */
@@ -141,15 +141,13 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::buildCriteria()
      *
      * @return void
      */
     public function testValidateNotUniqueWithExcept(): void
     {
-        $entity = \Mockery::mock(DummyEntity::class);
-        $entity->shouldReceive('getId')
-            ->twice()
-            ->andReturn(1);
+        $entity = new DummyEntity();
 
         $dto = new DummyDataTransferObject();
         $dto->targetEntity = $entity;
@@ -160,7 +158,7 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
             [
                 'entityClass' => DummyEntity::class,
                 'fields'      => ['property1', 'property2'],
-                'except'      => 'targetEntity',
+                'except'      => 'this.targetEntity',
             ]
         );
 
@@ -182,6 +180,7 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::buildCriteria()
      *
      * @return void
      */
@@ -210,15 +209,13 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::buildCriteria()
      *
      * @return void
      */
     public function testValidateFieldObject(): void
     {
-        $entity = \Mockery::mock(DummyEntity::class);
-        $entity->shouldReceive('getId')
-            ->once()
-            ->andReturn(1);
+        $entity = new DummyEntity();
 
         $dto = new DummyDataTransferObject();
         $dto->property1 = 'Property 1';
@@ -248,6 +245,7 @@ class UniqueEntityDataValidatorTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator::buildCriteria()
      *
      * @return void
      */
