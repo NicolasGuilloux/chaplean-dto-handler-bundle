@@ -149,7 +149,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @throws AnnotationException
      */
-    private function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
+    protected function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
     {
         $paramConfiguration = [];
         $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
@@ -172,7 +172,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @return array
      */
-    private function autoConfigureProperty(
+    protected function autoConfigureProperty(
         Request $request,
         array $paramConfiguration,
         string $prefix,
@@ -182,7 +182,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $name = $propertyConfigurationModel->getName();
         $content = $dtoName
             ? ($request->attributes->get($dtoName)[$name] ?? null)
-            : $request->request->get($name)
+            : self::getValueFromRequest($request, $name)
         ;
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
@@ -228,7 +228,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @return array
      */
-    private function autoConfigureOne(
+    protected function autoConfigureOne(
         Request $request,
         array $paramConfiguration,
         string $prefix,
@@ -269,7 +269,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @return mixed
      */
-    private function buildObject(Request $request, ParamConverter $configuration, string $prefix)
+    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix)
     {
         $class = $configuration->getClass();
         $object = new $class();
@@ -302,6 +302,22 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     }
 
     /**
+     * @param Request    $request
+     * @param string     $key
+     * @param mixed|null $default
+     *
+     * @return mixed|null
+     */
+    protected static function getValueFromRequest(Request $request, string $key, $default = null)
+    {
+        if ($request !== $result = $request->request->get($key, $request)) {
+            return $result;
+        }
+
+        return $request->get($key, $default);
+    }
+
+    /**
      * @param mixed   $object
      * @param Request $request
      * @param array   $options
@@ -310,7 +326,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @throws BadRequestHttpException
      */
-    private function validate($object, Request $request, array $options): void
+    protected function validate($object, Request $request, array $options): void
     {
         if ($this->validator === null || !($options['validate'] ?? true)) {
             return;

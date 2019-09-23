@@ -61,7 +61,7 @@ The following example handles the violations list into the variable `$violations
  * @ParamConverter(
  *    name="dtoVariable",
  *    converter="data_transfer_object_converter",
- *    options={"validations": "violationsList"}
+ *    options={"violations": "violationsList"}
  * )
  */
 public function postAction(
