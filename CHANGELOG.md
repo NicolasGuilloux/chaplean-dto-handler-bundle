@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1
+
+New features:
+ * The DTO handler can now also bind data from the attributes and query of the `Request` object. It loads the content with the following proprity: `Request > Attributes > Query`.
+
 ## 2.0.0
 
 New features:
