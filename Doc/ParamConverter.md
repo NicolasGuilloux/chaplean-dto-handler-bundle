@@ -2,6 +2,8 @@
 
 The `data_transfer_object_converter` maps all public variables from the DTO to the appropriate `ParamConverter`.
 
+The binded values are the content of the request, or the attributes, or the query with this respective priority.
+
 ## Tagged DTO
 
 To recognize the DTO, the ParamConverter required the `@DTO` annotation or the class to be tagged with `app.data_transfer_object`. To learn more about the annotation, please go [here](DataTransferObject.md#mandatory-annotations).
@@ -61,7 +63,7 @@ The following example handles the violations list into the variable `$violations
  * @ParamConverter(
  *    name="dtoVariable",
  *    converter="data_transfer_object_converter",
- *    options={"validations": "violationsList"}
+ *    options={"violations": "violationsList"}
  * )
  */
 public function postAction(

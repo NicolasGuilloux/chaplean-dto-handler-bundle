@@ -165,6 +165,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
      *
      * @return void
      *
@@ -219,6 +220,64 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
+     */
+    public function testApplyWithoutValidationWithMixedSourceValues(): void
+    {
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+                'options'   => ['validate' => false],
+            ]
+        );
+
+        $request = new Request();
+        $request->request->set('property1', 'Property 1');
+        $request->request->set('property2', 2);
+        $request->query->set('property2', 1);
+        $request->attributes->set('property2', 1);
+        $request->query->set('property3', 'test');
+        $request->attributes->set('property5', ['test']);
+        $request->request->set(
+            'property7',
+            [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+            ]
+        );
+
+        $this->manager->shouldReceive('apply')->once();
+
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+
+        $expectedDto = new DummyDataTransferObject();
+        $expectedDto->property1 = 'Property 1';
+        $expectedDto->property2 = 2;
+        $expectedDto->property3 = 'test';
+        $expectedDto->property5 = ['test'];
+        $expectedDto->property7 = [
+            ['keyname' => 'test1'],
+            ['keyname' => 'test2'],
+        ];
+
+        self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
      *
      * @return void
      *
@@ -288,6 +347,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
      *
      * @return void
      *
@@ -351,6 +411,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
      *
      * @return void
      *
@@ -415,6 +476,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
      *
      * @return void
      *
