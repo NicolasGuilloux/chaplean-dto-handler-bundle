@@ -1,9 +1,14 @@
 # Changelog
 
+## 2.1.1
+
+Behaviour Change:
+ * The DTO handler can now also bind data from the cookie of the `Request`. It now uses the following priority: `Request > Attributes > Query > Cookies`.
+
 ## 2.1.0
 
 New features:
- * The DTO handler can now also bind data from the attributes and query of the `Request` object. It loads the content with the following proprity: `Request > Attributes > Query`.
+ * The DTO handler can now also bind data from the attributes and query of the `Request` object. It loads the content with the following priority: `Request > Attributes > Query`.
 
 ## 2.0.0
 
