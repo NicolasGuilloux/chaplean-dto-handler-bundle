@@ -313,6 +313,14 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     }
 
     /**
+     * Searches for a value at $key in $request, if not found returns $default.
+     *
+     * Search order is:
+     *   1) $request->request
+     *   2) $request->attributes
+     *   3) $request->query
+     *   4) $request->cookies
+     *
      * @param Request    $request
      * @param string     $key
      * @param mixed|null $default
@@ -325,7 +333,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return $result;
         }
 
-        return $request->get($key, $default);
+        if ($request !== $result = $request->get($key, $request)) {
+            return $result;
+        }
+
+        return $request->cookies->get($key, $default);
     }
 
     /**
