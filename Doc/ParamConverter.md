@@ -82,7 +82,7 @@ To bypass it, you can set the following options. This is the default value.
 
 ```yaml
 chaplean_dto_handler:
-    force_optional:
+    bypass_param_converter_exception:
         - 'DateTime'
 ```
 

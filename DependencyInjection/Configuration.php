@@ -29,8 +29,8 @@ final class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->arrayNode('force_optional')
-                    ->info('Force optional value for specified classes')
+                ->arrayNode('bypass_param_converter_exception')
+                    ->info('Bypass the ParamConverter exception for specified classes')
                     ->defaultValue([
                         \DateTime::class
                     ])

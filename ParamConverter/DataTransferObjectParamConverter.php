@@ -36,7 +36,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * @var array
      */
-    protected $forceOptionalConfiguration;
+    protected $bypassParamConverterExceptionClasses;
 
     /**
      * @var ParamConverterManager
@@ -65,7 +65,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
-        $this->forceOptionalConfiguration = $container->getParameter('chaplean_dto_handler.force_optional') ?? [];
+        $this->bypassParamConverterExceptionClasses = $container->getParameter('chaplean_dto_handler.bypass_param_converter_exception') ?? [];
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
@@ -254,7 +254,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $config->setClass($propertyConfigurationModel->getType());
         $config->setIsOptional(true);
 
-        if (!\in_array($propertyConfigurationModel->getType(), $this->forceOptionalConfiguration, true)) {
+        if (!\in_array($propertyConfigurationModel->getType(), $this->bypassParamConverterExceptionClasses, true)) {
             $config->setIsOptional($propertyConfigurationModel->isOptional());
         }
 
