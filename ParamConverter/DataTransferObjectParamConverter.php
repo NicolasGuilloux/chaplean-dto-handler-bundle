@@ -65,7 +65,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
-        $this->forceOptionalConfiguration = $container->getParameter('dto_handler.force_optional') ?? [];
+        $this->forceOptionalConfiguration = $container->getParameter('chaplean_dto_handler.force_optional') ?? [];
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];

@@ -31,6 +31,10 @@ final class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('force_optional')
                     ->info('Force optional value for specified classes')
+                    ->defaultValue([
+                        \DateTime::class
+                    ])
+                    ->prototype('scalar')->end()
                 ->end()
             ->end()
         ->end();

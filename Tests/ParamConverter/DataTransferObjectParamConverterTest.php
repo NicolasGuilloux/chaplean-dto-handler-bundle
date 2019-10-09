@@ -65,7 +65,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $container = \Mockery::mock(ContainerInterface::class);
         $container->shouldReceive('getParameter')
             ->once()
-            ->with('dto_handler.force_optional')
+            ->with('chaplean_dto_handler.force_optional')
             ->andReturn([
                 \DateTime::class
             ]);
