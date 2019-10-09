@@ -25,12 +25,11 @@ final class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('dto_handler');
+        $rootNode = $treeBuilder->root('chaplean_dto_handler');
 
         $rootNode
             ->children()
                 ->arrayNode('force_optional')
-                    ->canBeEnabled()
                     ->info('Force optional value for specified classes')
                 ->end()
             ->end()
