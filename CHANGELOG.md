@@ -4,7 +4,7 @@
 
 Bug fix:
  * The `@Assert\DateTime` and `@Assert\Date` will now transform the property type in `DateTime` if no type is set.
- * You can now add a type that is forced to optional. Check the [documentation](Doc/ParamConverter.md#force-optional-configuration).
+ * You can now add a type to bypass the exception thrown by a `ParamConverter`. Check the [documentation](Doc/ParamConverter.md#bypass-paramconverter-exception-for-specific-classes).
 
 
 ## 2.1.1

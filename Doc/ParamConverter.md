@@ -74,9 +74,9 @@ public function postAction(
 }
 ```
 
-### Force optional configuration
+### Bypass `ParamConverter` exception for specific classes
 
-Some `ParamConverter` will throw an exception in case of a bad input. This is the case of the `DateTimeParamConverter` which will throw a 404 Not Found error if it fails to transform the input in date, when you give no value for instance. A 404 is not appropriated in most cases, especially if you have the `NotBlank` or `NotNull` assertion which will handle better the error.
+Some `ParamConverter` will throw an exception in case of a bad input. This is the case of the `DateTimeParamConverter` which will throw a 404 Not Found error if it fails to transform the input in date, when you give no value for instance. A 404 is not appropriated in most cases, especially if you have the `NotBlank` or `NotNull` assertion which will better handle the error.
 
 To bypass it, you can set the following options. This is the default value.
 
