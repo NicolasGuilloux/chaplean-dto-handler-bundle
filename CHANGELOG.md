@@ -1,9 +1,17 @@
 # Changelog
 
+## 2.1.1
+
+Bug fix:
+ * The `@Assert\DateTime` and `@Assert\Date` will now transform the property type in `DateTime` if no type is set.
+ * You can now add a type that is forced to optional. Check the [documentation](Doc/ParamConverter.md#force-optional-configuration).
+
+
 ## 2.1.0
 
 New features:
  * The DTO handler can now also bind data from the attributes and query of the `Request` object. It loads the content with the following proprity: `Request > Attributes > Query`.
+
 
 ## 2.0.0
 

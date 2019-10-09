@@ -252,6 +252,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $config = new ParamConverter([]);
         $config->setName($name);
         $config->setClass($propertyConfigurationModel->getType());
+        $config->setIsOptional(true);
 
         if (!\in_array($propertyConfigurationModel->getType(), $this->forceOptionalConfiguration, true)) {
             $config->setIsOptional($propertyConfigurationModel->isOptional());
