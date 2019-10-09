@@ -18,7 +18,7 @@ use Mockery\MockInterface;
 use phpmock\mockery\PHPMockery;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -62,7 +62,16 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
 
+        $container = \Mockery::mock(ContainerInterface::class);
+        $container->shouldReceive('getParameter')
+            ->once()
+            ->with('dto_handler.force_optional')
+            ->andReturn([
+                \DateTime::class
+            ]);
+
         $this->dataTransferObjectParamConverter = new DataTransferObjectParamConverter(
+            $container,
             $this->manager,
             $this->validator
         );

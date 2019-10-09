@@ -19,10 +19,9 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -37,12 +36,17 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * @var array
      */
-    protected $taggedDtoClasses;
+    protected $forceOptionalConfiguration;
 
     /**
      * @var ParamConverterManager
      */
     protected $manager;
+
+    /**
+     * @var array
+     */
+    protected $taggedDtoClasses;
 
     /**
      * @var ValidatorInterface
@@ -52,13 +56,16 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
+     * @param ContainerInterface      $container
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
+        ContainerInterface $container,
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
+        $this->forceOptionalConfiguration = $container->getParameter('dto_handler.force_optional') ?? [];
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
@@ -245,7 +252,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $config = new ParamConverter([]);
         $config->setName($name);
         $config->setClass($propertyConfigurationModel->getType());
-        $config->setIsOptional($propertyConfigurationModel->isOptional());
+
+        if (!\in_array($propertyConfigurationModel->getType(), $this->forceOptionalConfiguration, true)) {
+            $config->setIsOptional($propertyConfigurationModel->isOptional());
+        }
 
         if ($propertyConfigurationModel->getMapTo() !== null) {
             $config->setOptions(

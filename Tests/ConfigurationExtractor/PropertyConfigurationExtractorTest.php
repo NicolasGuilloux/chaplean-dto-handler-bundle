@@ -200,4 +200,60 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         self::assertTrue($propertyConfigurationModel->isOptional());
         self::assertTrue($propertyConfigurationModel->isCollection());
     }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::isOptional()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::isCollection()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::findTypeConstraint()
+     *
+     * @return void
+     *
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function testDateTimeType(): void
+    {
+        $property = $this->dtoReflectionClass->getProperty('property8');
+        $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
+
+        self::assertSame('property8', $propertyConfigurationModel->getName());
+        self::assertNull($propertyConfigurationModel->getMapTo());
+        self::assertSame(\DateTime::class, $propertyConfigurationModel->getType());
+        self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
+        self::assertFalse($propertyConfigurationModel->isOptional());
+        self::assertFalse($propertyConfigurationModel->isCollection());
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::isOptional()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::isCollection()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::findTypeConstraint()
+     *
+     * @return void
+     *
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function testDateType(): void
+    {
+        $property = $this->dtoReflectionClass->getProperty('property9');
+        $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
+
+        self::assertSame('property9', $propertyConfigurationModel->getName());
+        self::assertNull($propertyConfigurationModel->getMapTo());
+        self::assertSame(\DateTime::class, $propertyConfigurationModel->getType());
+        self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
+        self::assertTrue($propertyConfigurationModel->isOptional());
+        self::assertFalse($propertyConfigurationModel->isCollection());
+    }
 }
