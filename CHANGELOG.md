@@ -1,14 +1,23 @@
 # Changelog
 
+## 2.1.2
+
+Bug fix:
+ * The `@Assert\DateTime` and `@Assert\Date` will now transform the property type in `DateTime` if no type is set.
+ * You can now add a type to bypass the exception thrown by a `ParamConverter`. Check the [documentation](Doc/ParamConverter.md#bypass-paramconverter-exception-for-specific-classes).
+
+
 ## 2.1.1
 
 Behaviour Change:
  * The DTO handler can now also bind data from the cookie of the `Request`. It now uses the following priority: `Request > Attributes > Query > Cookies`.
 
+
 ## 2.1.0
 
 New features:
  * The DTO handler can now also bind data from the attributes and query of the `Request` object. It loads the content with the following priority: `Request > Attributes > Query`.
+
 
 ## 2.0.0
 

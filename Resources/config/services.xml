@@ -8,6 +8,7 @@
         <defaults autowire="true" autoconfigure="true" public="false"/>
 
         <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
+            <argument type="service" id="service_container" />
             <argument type="service" id="sensio_framework_extra.converter.manager" />
             <argument type="service" id="validator" />
             <tag name="request.param_converter" converter="data_transfer_object_converter" />

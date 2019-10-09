@@ -25,7 +25,19 @@ final class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('chaplean_dto_handler');
+        $rootNode = $treeBuilder->root('chaplean_dto_handler');
+
+        $rootNode
+            ->children()
+                ->arrayNode('bypass_param_converter_exception')
+                    ->info('Bypass the ParamConverter exception for specified classes')
+                    ->defaultValue([
+                        \DateTime::class
+                    ])
+                    ->prototype('scalar')->end()
+                ->end()
+            ->end()
+        ->end();
 
         return $treeBuilder;
     }

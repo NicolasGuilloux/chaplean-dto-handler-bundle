@@ -28,9 +28,30 @@ class ChapleanDtoHandlerExtension extends Extension
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
-        $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
+
+        $container->setParameter('chaplean_dto_handler', $config);
+        $this->setParameters($container, 'chaplean_dto_handler', $config);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param string           $name
+     * @param array            $configs
+     *
+     * @return void
+     */
+    public function setParameters(ContainerBuilder $container, $name, array $configs): void
+    {
+        foreach ($configs as $key => $parameter) {
+            $container->setParameter($name . '.' . $key, $parameter);
+
+            if (is_array($parameter)) {
+                $this->setParameters($container, $name . '.' . $key, $parameter);
+            }
+        }
     }
 }
