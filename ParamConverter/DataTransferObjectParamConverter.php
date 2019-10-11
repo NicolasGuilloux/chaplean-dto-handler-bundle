@@ -121,6 +121,18 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ;
 
         $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
+
+        // Validate raw input only the top level DTO
+        if ($actualDtoName === null) {
+            $object = $this->buildObject($request, $configuration, $uuid, true);
+
+            $preValidationOptions = $options;
+            $preValidationOptions['groups'] = ['dto_raw_input_validation'];
+
+            $this->validate($object, $request, $preValidationOptions);
+        }
+
+
         $this->manager->apply($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
@@ -293,10 +305,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param Request        $request
      * @param ParamConverter $configuration
      * @param string         $prefix
+     * @param bool           $keepAttributes
      *
      * @return mixed
      */
-    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix)
+    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $keepAttributes = false)
     {
         $class = $configuration->getClass();
         $object = new $class();
@@ -314,7 +327,9 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 continue;
             }
 
-            $request->attributes->remove($key);
+            if (!$keepAttributes) {
+                $request->attributes->remove($key);
+            }
 
             if ($prefixes[1] === '#') {
                 $object->$propertyName = $attribute;
