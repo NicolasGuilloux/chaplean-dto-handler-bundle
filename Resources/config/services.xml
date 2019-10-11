@@ -8,8 +8,8 @@
         <defaults autowire="true" autoconfigure="true" public="false"/>
 
         <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
+            <argument key="$bypassParamConverterExceptionClasses">%chaplean_dto_handler.bypass_param_converter_exception%</argument>
             <argument key="$httpValidationGroups">%chaplean_dto_handler.http_code_validation_groups%</argument>
-            <argument key="$container" type="service" id="service_container" />
             <argument key="$paramConverterManager" type="service" id="sensio_framework_extra.converter.manager" />
             <argument key="$validator" type="service" id="validator" />
             <tag name="request.param_converter" converter="data_transfer_object_converter" />

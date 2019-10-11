@@ -11,11 +11,9 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\DependencyInjection;
 
-use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * This class contains the configuration information for the bundle.
@@ -27,10 +25,9 @@ final class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('chaplean_dto_handler');
+        $treeBuilder = new TreeBuilder('chaplean_dto_handler');
 
-        $rootNode
+        $treeBuilder->getRootNode()
             ->children()
                 ->arrayNode('bypass_param_converter_exception')
                     ->info('Bypass the ParamConverter exception for specified classes')
@@ -43,12 +40,13 @@ final class Configuration implements ConfigurationInterface
                     ->info('Validate DTO with the the group and throw a HTTP exception with the mentioned status code in case of violations')
                     ->defaultValue([
                         'validation_group' => 'Default',
-                        'http_code'        => Response::HTTP_BAD_REQUEST,
+                        'http_status_code' => Response::HTTP_BAD_REQUEST,
                     ])
                     ->arrayPrototype()
                         ->children()
-                            ->scalarNode('validation_group')->end()
-                            ->integerNode('http_code')->end()
+                            ->scalarNode('validation_group')->defaultNull()->end()
+                            ->integerNode('http_status_code')->defaultNull()->end()
+                            ->integerNode('priority')->defaultValue(0)->end()
                         ->end()
                     ->end()
                 ->end()

@@ -19,11 +19,9 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -63,22 +61,30 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
+     * @param array                   $bypassParamConverterExceptionClasses
      * @param array                   $httpValidationGroups
-     * @param ContainerInterface      $container
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
+        array $bypassParamConverterExceptionClasses,
         array $httpValidationGroups,
-        ContainerInterface $container,
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
-        $this->bypassParamConverterExceptionClasses = $container->getParameter('chaplean_dto_handler.bypass_param_converter_exception') ?? [];
-        $this->httpValidationGroups = $httpValidationGroups;
+        $this->bypassParamConverterExceptionClasses = $bypassParamConverterExceptionClasses;
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
+
+        usort(
+            $httpValidationGroups,
+            static function ($group1, $group2) {
+                return $group1['priority'] < $group2['priority'];
+            }
+        );
+
+        $this->httpValidationGroups = $httpValidationGroups;
     }
 
     /**
@@ -366,14 +372,14 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         }
 
         $violations = new ConstraintViolationList();
-        $validationHandler = $options['violations'] ?? false;
+        $violationsHandler = $options['violations'] ?? false;
         $groups = $options['groups'] ?? null;
 
         if ($groups !== null) {
             $groups = [
                 [
                     'validation_group' => $groups,
-                    'http_code'        => null
+                    'http_status_code' => null
                 ]
             ];
         }
@@ -383,13 +389,13 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 $this->validator->validate($object, null, $group['validation_group'])
             );
 
-            if (!$validationHandler && $violations->count() > 0) {
-                throw new DataTransferObjectValidationException($violations, $group['http_code']);
+            if (!$violationsHandler && $violations->count() > 0) {
+                throw new DataTransferObjectValidationException($violations, $group['http_status_code']);
             }
         }
 
         $request->attributes->set(
-            $validationHandler,
+            $violationsHandler,
             $violations
         );
     }

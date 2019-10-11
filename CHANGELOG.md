@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+
+New features:
+ * The ability to set validation groups linked to an HTTP status code ([doc](Doc/ParamConverter.md#global-validation-groups)).
+
 ## 2.1.2
 
 Bug fix:
