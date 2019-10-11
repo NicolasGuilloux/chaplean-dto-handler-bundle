@@ -326,6 +326,16 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
                 'Default'
             )
             ->andReturn($violations);
@@ -467,6 +477,16 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
                 ['validation_group']
             )
             ->andReturn($violations);
@@ -529,6 +549,16 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
                 'Default'
             )
             ->andReturn($violations);
@@ -582,7 +612,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
-                'dto_raw_input_validation'
+                ['dto_raw_input_validation']
             )
             ->andReturn(new ConstraintViolationList());
 
