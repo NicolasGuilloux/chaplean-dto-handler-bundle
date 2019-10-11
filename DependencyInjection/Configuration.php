@@ -11,8 +11,11 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\DependencyInjection;
 
+use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * This class contains the configuration information for the bundle.
@@ -36,8 +39,20 @@ final class Configuration implements ConfigurationInterface
                     ])
                     ->prototype('scalar')->end()
                 ->end()
-            ->end()
-        ->end();
+                ->arrayNode('http_code_validation_groups')
+                    ->info('Validate DTO with the the group and throw a HTTP exception with the mentioned status code in case of violations')
+                    ->defaultValue([
+                        'validation_group' => 'Default',
+                        'http_code'        => Response::HTTP_BAD_REQUEST,
+                    ])
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('validation_group')->end()
+                            ->integerNode('http_code')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

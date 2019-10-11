@@ -22,6 +22,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterMana
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -37,6 +39,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @var array
      */
     protected $bypassParamConverterExceptionClasses;
+
+    /**
+     * @var array
+     */
+    protected $httpValidationGroups;
 
     /**
      * @var ParamConverterManager
@@ -56,16 +63,19 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
+     * @param array                   $httpValidationGroups
      * @param ContainerInterface      $container
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
+        array $httpValidationGroups,
         ContainerInterface $container,
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
         $this->bypassParamConverterExceptionClasses = $container->getParameter('chaplean_dto_handler.bypass_param_converter_exception') ?? [];
+        $this->httpValidationGroups = $httpValidationGroups;
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
@@ -355,13 +365,27 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return;
         }
 
+        $violations = new ConstraintViolationList();
         $validationHandler = $options['violations'] ?? false;
         $groups = $options['groups'] ?? null;
 
-        $violations = $this->validator->validate($object, null, $groups);
+        if ($groups !== null) {
+            $groups = [
+                [
+                    'validation_group' => $groups,
+                    'http_code'        => null
+                ]
+            ];
+        }
 
-        if (!$validationHandler && $violations->count() > 0) {
-            throw new DataTransferObjectValidationException($violations);
+        foreach ($groups ?? $this->httpValidationGroups as $group) {
+            $violations->addAll(
+                $this->validator->validate($object, null, $group['validation_group'])
+            );
+
+            if (!$validationHandler && $violations->count() > 0) {
+                throw new DataTransferObjectValidationException($violations, $group['http_code']);
+            }
         }
 
         $request->attributes->set(
