@@ -23,7 +23,7 @@ services:
 
 ### Default behaviour
 
-By default, the converter will validate the output and throw a `400 Bad Request` code if there is any violation. The content of the message will be the list of violations formatted in JSON.
+By default, the converter will validate the output and throw a `400 Bad Request` code if there is any violation. The content of the message will be the list of violations.
 
 ### Global validation groups
 
