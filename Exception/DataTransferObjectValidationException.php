@@ -24,12 +24,13 @@ class DataTransferObjectValidationException extends HttpException
      * DataTransferObjectValidationException constructor.
      *
      * @param ConstraintViolationListInterface $violations
+     * @param integer|null                     $statusCode
      */
-    public function __construct(ConstraintViolationListInterface $violations)
+    public function __construct(ConstraintViolationListInterface $violations, int $statusCode = null)
     {
         $this->violations = $violations;
 
-        parent::__construct(Response::HTTP_BAD_REQUEST);
+        parent::__construct($statusCode ?? Response::HTTP_BAD_REQUEST);
     }
 
     /**

@@ -18,7 +18,6 @@ use Mockery\MockInterface;
 use phpmock\mockery\PHPMockery;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -62,16 +61,12 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
 
-        $container = \Mockery::mock(ContainerInterface::class);
-        $container->shouldReceive('getParameter')
-            ->once()
-            ->with('chaplean_dto_handler.bypass_param_converter_exception')
-            ->andReturn([
-                \DateTime::class
-            ]);
-
         $this->dataTransferObjectParamConverter = new DataTransferObjectParamConverter(
-            $container,
+            [\DateTime::class],
+            [
+                ['validation_group' => 'http_conflict_exception', 'http_status_code' => 409, 'priority' => -1],
+                ['validation_group' => 'Default', 'http_status_code' => 400, 'priority' => 0],
+            ],
             $this->manager,
             $this->validator
         );
@@ -331,7 +326,27 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
-                null
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                'Default'
+            )
+            ->andReturn($violations);
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                'http_conflict_exception'
             )
             ->andReturn($violations);
 
@@ -462,6 +477,16 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
                 ['validation_group']
             )
             ->andReturn($violations);
@@ -475,7 +500,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $expectedDto->property5 = [$entity];
 
         self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
-        self::assertSame($violations, $request->attributes->get('violationErrors'));
+        self::assertEquals($violations, $request->attributes->get('violationErrors'));
     }
 
     /**
@@ -524,7 +549,90 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with(
                 \Mockery::type(DummyDataTransferObject::class),
                 null,
-                null
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                'Default'
+            )
+            ->andReturn($violations);
+
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
+     *
+     * @expectedException \Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException
+     */
+    public function testApplyWithValidationWithConflictException(): void
+    {
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+            ]
+        );
+
+        $entity = new DummyEntity();
+
+        $request = new Request();
+        $request->request->set('property1', 'Property 1');
+        $request->request->set('property2', 2);
+        $request->request->set('property3', $entity);
+        $request->request->set('property5', [$entity]);
+
+        $this->manager->shouldReceive('apply')->once();
+
+        $violation = \Mockery::mock(ConstraintViolation::class);
+        $violations = new ConstraintViolationList();
+        $violations->add($violation);
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                'Default'
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                'http_conflict_exception'
             )
             ->andReturn($violations);
 

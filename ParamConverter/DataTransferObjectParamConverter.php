@@ -19,9 +19,9 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -37,6 +37,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @var array
      */
     protected $bypassParamConverterExceptionClasses;
+
+    /**
+     * @var array
+     */
+    protected $httpValidationGroups;
 
     /**
      * @var ParamConverterManager
@@ -56,19 +61,30 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
-     * @param ContainerInterface      $container
+     * @param array                   $bypassParamConverterExceptionClasses
+     * @param array                   $httpValidationGroups
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
-        ContainerInterface $container,
+        array $bypassParamConverterExceptionClasses,
+        array $httpValidationGroups,
         ParamConverterManager $paramConverterManager,
         ValidatorInterface $validator = null
     ) {
-        $this->bypassParamConverterExceptionClasses = $container->getParameter('chaplean_dto_handler.bypass_param_converter_exception') ?? [];
+        $this->bypassParamConverterExceptionClasses = $bypassParamConverterExceptionClasses;
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
+
+        usort(
+            $httpValidationGroups,
+            static function ($group1, $group2) {
+                return $group1['priority'] < $group2['priority'];
+            }
+        );
+
+        $this->httpValidationGroups = $httpValidationGroups;
     }
 
     /**
@@ -105,6 +121,18 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ;
 
         $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
+
+        // Validate raw input only the top level DTO
+        if ($actualDtoName === null) {
+            $object = $this->buildObject($request, $configuration, $uuid, true);
+
+            $preValidationOptions = $options;
+            $preValidationOptions['groups'] = ['dto_raw_input_validation'];
+
+            $this->validate($object, $request, $preValidationOptions);
+        }
+
+
         $this->manager->apply($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
@@ -277,10 +305,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param Request        $request
      * @param ParamConverter $configuration
      * @param string         $prefix
+     * @param bool           $keepAttributes
      *
      * @return mixed
      */
-    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix)
+    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $keepAttributes = false)
     {
         $class = $configuration->getClass();
         $object = new $class();
@@ -298,7 +327,9 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 continue;
             }
 
-            $request->attributes->remove($key);
+            if (!$keepAttributes) {
+                $request->attributes->remove($key);
+            }
 
             if ($prefixes[1] === '#') {
                 $object->$propertyName = $attribute;
@@ -355,17 +386,31 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return;
         }
 
-        $validationHandler = $options['violations'] ?? false;
+        $violations = new ConstraintViolationList();
+        $violationsHandler = $options['violations'] ?? false;
         $groups = $options['groups'] ?? null;
 
-        $violations = $this->validator->validate($object, null, $groups);
+        if ($groups !== null) {
+            $groups = [
+                [
+                    'validation_group' => $groups,
+                    'http_status_code' => null
+                ]
+            ];
+        }
 
-        if (!$validationHandler && $violations->count() > 0) {
-            throw new DataTransferObjectValidationException($violations);
+        foreach ($groups ?? $this->httpValidationGroups as $group) {
+            $violations->addAll(
+                $this->validator->validate($object, null, $group['validation_group'])
+            );
+
+            if (!$violationsHandler && $violations->count() > 0) {
+                throw new DataTransferObjectValidationException($violations, $group['http_status_code']);
+            }
         }
 
         $request->attributes->set(
-            $validationHandler,
+            $violationsHandler,
             $violations
         );
     }

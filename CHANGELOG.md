@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+
+New features:
+ * The ability to set validation groups linked to an HTTP status code ([doc](Doc/ParamConverter.md#global-validation-groups)).
+ * Add raw input data validation using the `dto_raw_input_validation` validation group ([doc](Doc/ParamConverter.md#pre-validation-brefore-data-conversion)).
+
 ## 2.1.2
 
 Bug fix:

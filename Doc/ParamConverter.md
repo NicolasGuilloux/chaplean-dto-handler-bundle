@@ -23,9 +23,26 @@ services:
 
 ### Default behaviour
 
-By default, the converter will validate the output and throw a `400 Bad Request` code if there is any violation. The content of the message will be the list of violations formatted in JSON.
+By default, the converter will validate the output and throw a `400 Bad Request` code if there is any violation. The content of the message will be the list of violations.
 
-### Validation Groups
+### Global validation groups
+
+The DTO Handler supports the configuration of the default validation groups to check. Moreover, it can be linked to a HTTP status code returned when there is at least one violation during the validation. Just add the following configuration to your application. Don't forget to add the `Default` validation group to validate it and throw a `400 Bad Request` if you want to keep the default behaviour.
+
+```yaml
+chaplean_dto_handler:
+    http_code_validation_groups:
+        - { validation_group: http_conflict_exception, http_status_code: 409, priority : -1 }
+        - { validation_group: Default, http_status_code: 400 }
+```
+
+The validation group with the highest priority is validated first and so on. The default values are:
+
+```yaml
+{ validation_group: null, http_status_code: 400, priority : 0 }
+```
+
+### Specific validation Groups
 
 To define the validation groups, you need to explicitly declare the `ParamConverter` in the controller action and set the option `groups`. The following example uses the annotation configuration:
 
@@ -38,6 +55,11 @@ To define the validation groups, you need to explicitly declare the `ParamConver
     }
 )
 ```
+
+
+### Pre-validation brefore data conversion
+
+To validate the raw input before any data conversion, use the assertions with the validation group `dto_raw_input_validation`.
 
 
 ### Disable validation
