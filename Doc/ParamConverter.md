@@ -59,7 +59,7 @@ To define the validation groups, you need to explicitly declare the `ParamConver
 
 ### Pre-validation brefore data conversion
 
-To validation the raw input before any data conversion, use the assertions with the validation group `dto_raw_input_validation`.
+To validate the raw input before any data conversion, use the assertions with the validation group `dto_raw_input_validation`.
 
 
 ### Disable validation
