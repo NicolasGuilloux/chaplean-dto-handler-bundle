@@ -84,7 +84,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
         $this->propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
-            ->disableExceptionOnInvalidPropertyPath()
+            ->disableExceptionOnInvalidIndex()
             ->getPropertyAccessor();
 
         usort(
@@ -202,7 +202,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $object = new $class();
 
         foreach ($properties as $property) {
-            if (!$this->propertyAccessor->isWritable($object, $property->getName())) {
+            if ($this->propertyAccessor->isWritable($object, $property->getName()) === null) {
                 continue;
             }
 
