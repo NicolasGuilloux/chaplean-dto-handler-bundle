@@ -7,6 +7,10 @@
     <services>
         <defaults autowire="true" autoconfigure="true" public="false"/>
 
+        <service id="Chaplean\Bundle\DtoHandlerBundle\EventListener\DataTransferObjectValidationExceptionSubscriber">
+            <tag name="kernel.event_subscriber" />
+        </service>
+
         <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
             <argument key="$bypassParamConverterExceptionClasses">%chaplean_dto_handler.bypass_param_converter_exception%</argument>
             <argument key="$httpValidationGroups">%chaplean_dto_handler.http_code_validation_groups%</argument>
@@ -15,10 +19,10 @@
             <tag name="request.param_converter" converter="data_transfer_object_converter" />
         </service>
 
-        <service id="Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator" />
-
-        <service id="Chaplean\Bundle\DtoHandlerBundle\EventListener\DataTransferObjectValidationExceptionSubscriber">
-            <tag name="kernel.event_subscriber" />
+        <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
+            <argument key="$paramConverterManager" type="service" id="sensio_framework_extra.converter.manager" />
         </service>
+
+        <service id="Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator" />
     </services>
 </container>

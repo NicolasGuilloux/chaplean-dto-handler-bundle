@@ -3,6 +3,9 @@
 namespace Chaplean\Bundle\DtoHandlerBundle\Utility;
 
 use Doctrine\Common\Collections\Collection;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class DtoUtility
@@ -12,6 +15,21 @@ use Doctrine\Common\Collections\Collection;
  */
 class DtoUtility
 {
+    /**
+     * @var ParamConverterManager
+     */
+    protected $paramConverterManager;
+
+    /**
+     * DtoUtility constructor.
+     *
+     * @param ParamConverterManager $paramConverterManager
+     */
+    public function __construct(ParamConverterManager $paramConverterManager)
+    {
+        $this->paramConverterManager = $paramConverterManager;
+    }
+
     /**
      * @param Collection         $entityList
      * @param \Traversable|array $newEntityList
@@ -33,5 +51,32 @@ class DtoUtility
         }
 
         return $entityList;
+    }
+
+    /**
+     * @param array      $data
+     * @param string     $dtoClass
+     * @param array|null $options
+     *
+     * @return mixed
+     */
+    public function loadArrayToDto(array $data, string $dtoClass, array $options = null)
+    {
+        $request = new Request(
+            [],
+            $data,
+            [$dtoClass => 'dto']
+        );
+
+        $config = new ParamConverter([]);
+        $config->setName('dto');
+        $config->setClass($dtoClass);
+        $config->setIsOptional(false);
+        $config->setConverter('data_transfer_object_converter');
+        $config->setOptions($options);
+
+        $this->paramConverterManager->apply($request, [$config]);
+
+        return $request->get('dto');
     }
 }
