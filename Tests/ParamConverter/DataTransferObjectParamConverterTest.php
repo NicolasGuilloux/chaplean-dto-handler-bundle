@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 
@@ -637,5 +638,78 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->andReturn($violations);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
+     */
+    public function testApplyWithUnwrittableProperties(): void
+    {
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => SubDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+            ]
+        );
+
+        $request = new Request();
+        $request->request->set('keyname', 'Keyname');
+        $request->request->set('unaccessible', 2);
+        $request->request->set('accessible', 'Accessible');
+
+        $request->attributes->set('dataTransferObject', null);
+        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('parasite_', 'UselessAttribute');
+
+        $this->manager->shouldReceive('apply')->once();
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(SubDataTransferObject::class),
+                null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(SubDataTransferObject::class),
+                null,
+                'Default'
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(SubDataTransferObject::class),
+                null,
+                'http_conflict_exception'
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+
+        $expectedDto = new SubDataTransferObject();
+        $expectedDto->keyname = 'Keyname';
+        $expectedDto->setAccessible('Accessible');
+
+        self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
     }
 }

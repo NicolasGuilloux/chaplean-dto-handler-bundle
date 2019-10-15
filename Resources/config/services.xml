@@ -19,7 +19,7 @@
             <tag name="request.param_converter" converter="data_transfer_object_converter" />
         </service>
 
-        <service id="Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter">
+        <service id="Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility">
             <argument key="$paramConverterManager" type="service" id="sensio_framework_extra.converter.manager" />
         </service>
 

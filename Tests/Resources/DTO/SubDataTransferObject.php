@@ -23,4 +23,26 @@ final class SubDataTransferObject
      * @Assert\Type("string")
      */
     public $keyname;
+
+    /**
+     * @var null
+     */
+    protected $unaccessible;
+
+    /**
+     * @var string|null
+     */
+    protected $accessible;
+
+    /**
+     * @param string|null $accessible
+     *
+     * @return self
+     */
+    public function setAccessible(?string $accessible): self
+    {
+        $this->accessible = $accessible;
+
+        return $this;
+    }
 }

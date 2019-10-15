@@ -21,6 +21,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInte
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -49,6 +51,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected $manager;
 
     /**
+     * @var PropertyAccessor
+     */
+    protected $propertyAccessor;
+
+    /**
      * @var array
      */
     protected $taggedDtoClasses;
@@ -61,10 +68,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
-     * @param array                   $bypassParamConverterExceptionClasses
-     * @param array                   $httpValidationGroups
      * @param ParamConverterManager   $paramConverterManager
      * @param ValidatorInterface|null $validator
+     * @param array                   $bypassParamConverterExceptionClasses
+     * @param array                   $httpValidationGroups
      */
     public function __construct(
         array $bypassParamConverterExceptionClasses,
@@ -76,11 +83,14 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
+            ->disableExceptionOnInvalidPropertyPath()
+            ->getPropertyAccessor();
 
         usort(
             $httpValidationGroups,
             static function ($group1, $group2) {
-                return $group1['priority'] < $group2['priority'];
+                return ($group1['priority'] ?? 0) < ($group2['priority'] ?? 0);
             }
         );
 
@@ -187,11 +197,16 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
     {
         $paramConfiguration = [];
-        $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+        $class = $reflectionClass->getName();
+        $properties = $reflectionClass->getProperties();
+        $object = new $class();
 
         foreach ($properties as $property) {
-            $parameters = new PropertyConfigurationExtractor($property);
+            if (!$this->propertyAccessor->isWritable($object, $property->getName())) {
+                continue;
+            }
 
+            $parameters = new PropertyConfigurationExtractor($property);
             $paramConfiguration = $this->autoConfigureProperty($request, $paramConfiguration, $prefix, $dtoName, $parameters);
         }
 
@@ -332,11 +347,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             }
 
             if ($prefixes[1] === '#') {
-                $object->$propertyName = $attribute;
+                $this->propertyAccessor->setValue($object, $propertyName, $attribute);
             } else {
-                $property = $object->$propertyName ?? [];
+                $property = $this->propertyAccessor->getValue($object, $propertyName) ?? [];
                 $property[] = $attribute;
-                $object->$propertyName = $property;
+                $this->propertyAccessor->setValue($object, $propertyName, $property);
             }
         }
 

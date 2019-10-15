@@ -75,7 +75,7 @@ class DtoUtility
         $config->setConverter('data_transfer_object_converter');
         $config->setOptions($options);
 
-        $this->paramConverterManager->apply($request, [$config]);
+        $this->paramConverterManager->apply($request, $config);
 
         return $request->get('dto');
     }

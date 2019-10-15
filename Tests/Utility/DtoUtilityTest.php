@@ -6,6 +6,7 @@ use Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility;
 use Doctrine\Common\Collections\ArrayCollection;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
@@ -115,7 +116,7 @@ class DtoUtilityTest extends MockeryTestCase
             ->once()
             ->with(
                 \Mockery::type(Request::class),
-                \Mockery::type('array')
+                \Mockery::type(ParamConverter::class)
             )
             ->andReturn(new SubDataTransferObject());
 
