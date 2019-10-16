@@ -41,6 +41,7 @@ final class DummyDataTransferObject
 2. [Getting started](#2-getting-started)
     - [Set up the Data Transfer Object](Doc/DataTransferObject.md)
     - [Configure the ParamConverter](Doc/ParamConverter.md)
+    - [Some utilities](Doc/Utilities.md)
 3. [Example](#3-example)
 4. [Versioning](#4-versioning)
 5. [Contributing](#5-contributing)

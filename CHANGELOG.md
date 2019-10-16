@@ -5,6 +5,8 @@
 New features:
  * The ability to set validation groups linked to an HTTP status code ([doc](Doc/ParamConverter.md#global-validation-groups)).
  * Add raw input data validation using the `dto_raw_input_validation` validation group ([doc](Doc/ParamConverter.md#pre-validation-brefore-data-conversion)).
+ * Add the `Field annotation` ([doc](Doc/DataTransferObject.md#field-annotation)).
+ * Add the utility to bind an array to a DTO using the ParamConverter ([doc](Doc/Utilities.md#load-an-array-into-a-dto-using-the-magic-of-the-paramconverter)).
 
 ## 2.1.2
 
