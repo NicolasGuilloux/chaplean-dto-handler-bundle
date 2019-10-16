@@ -221,10 +221,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ?string $dtoName,
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
-        $name = $propertyConfigurationModel->getName();
+        $field =  $propertyConfigurationModel->getField();
         $content = $dtoName
-            ? ($request->attributes->get($dtoName)[$name] ?? null)
-            : self::getValueFromRequest($request, $name)
+            ? ($request->attributes->get($dtoName)[$field] ?? null)
+            : self::getValueFromRequest($request, $field)
         ;
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
