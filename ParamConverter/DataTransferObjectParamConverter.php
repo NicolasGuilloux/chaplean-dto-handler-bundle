@@ -21,6 +21,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInte
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,6 +50,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @var ParamConverterManager
      */
     protected $manager;
+
+    /**
+     * @var PropertyAccessor
+     */
+    protected $propertyAccessor;
 
     /**
      * @var array
@@ -76,11 +84,12 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         usort(
             $httpValidationGroups,
             static function ($group1, $group2) {
-                return $group1['priority'] < $group2['priority'];
+                return ($group1['priority'] ?? 0) < ($group2['priority'] ?? 0);
             }
         );
 
@@ -131,7 +140,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
             $this->validate($object, $request, $preValidationOptions);
         }
-
 
         $this->manager->apply($request, $config);
 
@@ -187,11 +195,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
     {
         $paramConfiguration = [];
-        $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+        $properties = $reflectionClass->getProperties();
 
         foreach ($properties as $property) {
             $parameters = new PropertyConfigurationExtractor($property);
-
             $paramConfiguration = $this->autoConfigureProperty($request, $paramConfiguration, $prefix, $dtoName, $parameters);
         }
 
@@ -214,10 +221,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ?string $dtoName,
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
-        $name = $propertyConfigurationModel->getName();
+        $field =  $propertyConfigurationModel->getField();
         $content = $dtoName
-            ? ($request->attributes->get($dtoName)[$name] ?? null)
-            : self::getValueFromRequest($request, $name)
+            ? ($request->attributes->get($dtoName)[$field] ?? null)
+            : self::getValueFromRequest($request, $field)
         ;
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
@@ -331,12 +338,17 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 $request->attributes->remove($key);
             }
 
-            if ($prefixes[1] === '#') {
-                $object->$propertyName = $attribute;
-            } else {
-                $property = $object->$propertyName ?? [];
-                $property[] = $attribute;
-                $object->$propertyName = $property;
+            try {
+                if ($prefixes[1] === '#') {
+                    $this->propertyAccessor->setValue($object, $propertyName, $attribute);
+                } else {
+                    $property = $this->propertyAccessor->getValue($object, $propertyName) ?? [];
+                    $property[] = $attribute;
+                    $this->propertyAccessor->setValue($object, $propertyName, $property);
+                }
+            } catch (NoSuchPropertyException $e) {
+                // Cannot write into the property, skip it
+                continue;
             }
         }
 

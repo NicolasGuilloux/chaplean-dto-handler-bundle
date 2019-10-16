@@ -50,6 +50,22 @@ Here is an example of this annotation:
 public $dummyEntity;
 ```
 
+
+## Field annotation
+
+In case the input does not match the name of the property, you can explicitly bind a input key to a specific property using the `Field` annotation.
+
+Here is an example of this annotation:
+
+```php
+/**
+ * @Assert\Type("App\Entity\User")
+ *
+ * @Field("user_id")
+ */
+public $user;
+```
+
 ## Validation
 
 ### UniqueEntityData

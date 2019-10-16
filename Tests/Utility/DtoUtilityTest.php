@@ -4,7 +4,12 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Tests\Utility;
 
 use Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility;
 use Doctrine\Common\Collections\ArrayCollection;
-use PHPUnit\Framework\TestCase;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
+use Mockery\MockInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\HttpFoundation\Request;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
 
 /**
@@ -13,8 +18,29 @@ use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
  * @package Chaplean\Bundle\DtoHandlerBundle\Tests\Utility
  * @author  Nicolas Guilloux <nicolas.guilloux@protonmail.com>
  */
-class DtoUtilityTest extends TestCase
+class DtoUtilityTest extends MockeryTestCase
 {
+    /**
+     * @var DtoUtility
+     */
+    protected $dtoUtility;
+
+    /**
+     * @var ParamConverterManager|MockInterface
+     */
+    protected $paramConverterManager;
+
+    /**
+     * @return void
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->paramConverterManager = \Mockery::mock(ParamConverterManager::class);
+        $this->dtoUtility = new DtoUtility($this->paramConverterManager);
+    }
+
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::updateEntityList()
      *
@@ -75,5 +101,27 @@ class DtoUtilityTest extends TestCase
         $arrayCollection = new ArrayCollection([$entity1, $entity2]);
 
         DtoUtility::updateEntityList($arrayCollection, '');
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::__construct()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::loadArrayToDto()
+     *
+     * @return void
+     */
+    public function testLoadArrayToDto(): void
+    {
+        $this->paramConverterManager
+            ->shouldReceive('apply')
+            ->once()
+            ->with(
+                \Mockery::type(Request::class),
+                \Mockery::type(ParamConverter::class)
+            )
+            ->andReturn(new SubDataTransferObject());
+
+        $result = $this->dtoUtility->loadArrayToDto(['keyname' => 'perfect_value'], SubDataTransferObject::class);
+
+        self::assertNull($result);
     }
 }

@@ -3,9 +3,9 @@
 This version of the bundle requires Symfony 3.4+.
 
 [![Package version](https://img.shields.io/packagist/v/chaplean/dto-handler-bundle.svg)](https://packagist.org/packages/chaplean/dto-handler-bundle)
-[![Build Status](https://img.shields.io/travis/chaplean/dto-handler-bundle.svg?branch=master)](https://travis-ci.org/chaplean/dto-handler-bundle?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/chaplean/dto-handler-bundle/badge.svg?branch=master)](https://coveralls.io/github/chaplean/dto-handler-bundle?branch=master)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/chaplean/dto-handler-bundle/issues)
+[![Build Status](https://img.shields.io/travis/NicolasGuilloux/dto-handler-bundle.svg?branch=master)](https://travis-ci.org/NicolasGuilloux/dto-handler-bundle?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/NicolasGuilloux/dto-handler-bundle/badge.svg?branch=master)](https://coveralls.io/github/NicolasGuilloux/dto-handler-bundle?branch=master)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/NicolasGuilloux/dto-handler-bundle/issues)
 [![License](https://img.shields.io/badge/license-MIT-red.svg)](LICENSE.md)
 
 The dto-handler-bundle loads the content of a request into a Data Transfer Object (DTO), mapping its properties such as entities from the database.
@@ -41,6 +41,7 @@ final class DummyDataTransferObject
 2. [Getting started](#2-getting-started)
     - [Set up the Data Transfer Object](Doc/DataTransferObject.md)
     - [Configure the ParamConverter](Doc/ParamConverter.md)
+    - [Some utilities](Doc/Utilities.md)
 3. [Example](#3-example)
 4. [Versioning](#4-versioning)
 5. [Contributing](#5-contributing)

@@ -36,6 +36,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -54,6 +55,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property1', $propertyConfigurationModel->getName());
+        self::assertSame('property1', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertNull($propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -64,6 +66,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -82,6 +85,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property2', $propertyConfigurationModel->getName());
+        self::assertSame('property2', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertNull($propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -92,6 +96,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -110,6 +115,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property3', $propertyConfigurationModel->getName());
+        self::assertSame('property3', $propertyConfigurationModel->getField());
         self::assertSame('keyname', $propertyConfigurationModel->getMapTo());
         self::assertSame(DummyEntity::class, $propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -120,6 +126,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -138,6 +145,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property4', $propertyConfigurationModel->getName());
+        self::assertSame('property4', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertSame(DummyEntity::class, $propertyConfigurationModel->getType());
         self::assertInstanceOf(ParamConverter::class, $propertyConfigurationModel->getParamConverterAnnotation());
@@ -148,6 +156,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -166,6 +175,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property5', $propertyConfigurationModel->getName());
+        self::assertSame('property5', $propertyConfigurationModel->getField());
         self::assertSame('keyname', $propertyConfigurationModel->getMapTo());
         self::assertSame(DummyEntity::class, $propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -176,6 +186,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -194,6 +205,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property6', $propertyConfigurationModel->getName());
+        self::assertSame('property6', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertNull($propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -204,6 +216,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -222,6 +235,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property8', $propertyConfigurationModel->getName());
+        self::assertSame('property8', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertSame(\DateTime::class, $propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
@@ -232,6 +246,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::__construct()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getName()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getField()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getMapTo()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getType()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor::getParamConverterAnnotation()
@@ -250,6 +265,7 @@ class PropertyConfigurationExtractorTest extends MockeryTestCase
         $propertyConfigurationModel = new PropertyConfigurationExtractor($property);
 
         self::assertSame('property9', $propertyConfigurationModel->getName());
+        self::assertSame('another_property', $propertyConfigurationModel->getField());
         self::assertNull($propertyConfigurationModel->getMapTo());
         self::assertSame(\DateTime::class, $propertyConfigurationModel->getType());
         self::assertNull($propertyConfigurationModel->getParamConverterAnnotation());
