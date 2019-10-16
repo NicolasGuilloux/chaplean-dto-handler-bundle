@@ -69,10 +69,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     /**
      * DataTransferObjectParamConverter constructor.
      *
-     * @param ParamConverterManager   $paramConverterManager
-     * @param ValidatorInterface|null $validator
      * @param array                   $bypassParamConverterExceptionClasses
      * @param array                   $httpValidationGroups
+     * @param ParamConverterManager   $paramConverterManager
+     * @param ValidatorInterface|null $validator
      */
     public function __construct(
         array $bypassParamConverterExceptionClasses,
