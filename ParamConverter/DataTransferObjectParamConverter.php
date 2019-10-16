@@ -21,6 +21,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInte
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -83,9 +84,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
-        $this->propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()
-            ->disableExceptionOnInvalidIndex()
-            ->getPropertyAccessor();
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         usort(
             $httpValidationGroups,
@@ -142,7 +141,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $this->validate($object, $request, $preValidationOptions);
         }
 
-
         $this->manager->apply($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
@@ -197,15 +195,9 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected function autoConfigure(\ReflectionClass $reflectionClass, Request $request, string $prefix, ?string $dtoName): array
     {
         $paramConfiguration = [];
-        $class = $reflectionClass->getName();
         $properties = $reflectionClass->getProperties();
-        $object = new $class();
 
         foreach ($properties as $property) {
-            if ($this->propertyAccessor->isWritable($object, $property->getName()) === null) {
-                continue;
-            }
-
             $parameters = new PropertyConfigurationExtractor($property);
             $paramConfiguration = $this->autoConfigureProperty($request, $paramConfiguration, $prefix, $dtoName, $parameters);
         }
@@ -346,12 +338,17 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 $request->attributes->remove($key);
             }
 
-            if ($prefixes[1] === '#') {
-                $this->propertyAccessor->setValue($object, $propertyName, $attribute);
-            } else {
-                $property = $this->propertyAccessor->getValue($object, $propertyName) ?? [];
-                $property[] = $attribute;
-                $this->propertyAccessor->setValue($object, $propertyName, $property);
+            try {
+                if ($prefixes[1] === '#') {
+                    $this->propertyAccessor->setValue($object, $propertyName, $attribute);
+                } else {
+                    $property = $this->propertyAccessor->getValue($object, $propertyName) ?? [];
+                    $property[] = $attribute;
+                    $this->propertyAccessor->setValue($object, $propertyName, $property);
+                }
+            } catch (NoSuchPropertyException $e) {
+                // Cannot write into the property, skip it
+                continue;
             }
         }
 

@@ -11,6 +11,7 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor;
 
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -35,6 +36,11 @@ class PropertyConfigurationExtractor
      * @var string
      */
     private $name;
+
+    /**
+     * @var string
+     */
+    private $field;
 
     /**
      * @var string
@@ -72,6 +78,8 @@ class PropertyConfigurationExtractor
     {
         $annotationReader = new AnnotationReader();
 
+        /** @var Field $fieldAnnotation */
+        $fieldAnnotation = $annotationReader->getPropertyAnnotation($property, Field::class);
         /** @var ParamConverter $paramConverterAnnotation */
         $paramConverterAnnotation = $annotationReader->getPropertyAnnotation($property, ParamConverter::class);
         /** @var All $arrayAnnotation */
@@ -90,6 +98,7 @@ class PropertyConfigurationExtractor
         $notBlankAnnotation = $annotationReader->getPropertyAnnotation($property, NotBlank::class);
 
         $this->name = $property->getName();
+        $this->field = $fieldAnnotation !== null ? $fieldAnnotation->keyname : $property->getName();
         $this->mapTo = $mapToAnnotation !== null ? $mapToAnnotation->keyname : null;
         $this->paramConverterAnnotation = $paramConverterAnnotation;
         $this->isOptional = ($notNullAnnotation === null) && ($notBlankAnnotation === null);
@@ -122,6 +131,14 @@ class PropertyConfigurationExtractor
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getField(): string
+    {
+        return $this->field;
     }
 
     /**

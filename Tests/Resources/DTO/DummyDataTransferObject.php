@@ -12,6 +12,7 @@
 namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -102,6 +103,7 @@ final class DummyDataTransferObject
      * @var DummyEntity
      *
      * @Assert\Date
+     * @Field("another_property")
      */
     public $property9;
 }
