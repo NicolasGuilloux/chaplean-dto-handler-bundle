@@ -1,6 +1,6 @@
 # Utilities
 
-All utilities are accessible from the `DtoUtility`. Some may require to inject the class as a service, others are accessible whenever the context via static functions.
+All utilities are accessible from the `DtoUtility`. Some may require to inject the class as a service, others are accessible whatever the context via static functions.
 
 ## Update an ArrayCollection of entities
 
