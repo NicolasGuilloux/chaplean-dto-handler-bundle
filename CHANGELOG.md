@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.1
+
+Bug fix:
+ * Fix default values in the bundle configuration definition.
+
 ## 2.2.0
 
 New features:
