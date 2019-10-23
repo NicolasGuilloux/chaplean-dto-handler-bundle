@@ -40,8 +40,10 @@ final class Configuration implements ConfigurationInterface
                 ->arrayNode('http_code_validation_groups')
                     ->info('Validate DTO with the the group and throw a HTTP exception with the mentioned status code in case of violations')
                     ->defaultValue([
-                        'validation_group' => 'Default',
-                        'http_status_code' => Response::HTTP_BAD_REQUEST,
+                        [
+                            'validation_group' => 'Default',
+                            'http_status_code' => Response::HTTP_BAD_REQUEST,
+                        ]
                     ])
                     ->arrayPrototype()
                         ->children()
