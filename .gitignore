@@ -19,3 +19,4 @@
 # PHPUnit
 /phpunit-filter.php
 /coverage
+/.phpunit.result.cache
