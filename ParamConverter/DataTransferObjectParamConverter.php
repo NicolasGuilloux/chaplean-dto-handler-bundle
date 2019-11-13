@@ -20,10 +20,14 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -62,6 +66,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected $taggedDtoClasses;
 
     /**
+     * @var TranslatorInterface
+     */
+    protected $translator;
+
+    /**
      * @var ValidatorInterface
      */
     protected $validator;
@@ -72,18 +81,21 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param array                   $bypassParamConverterExceptionClasses
      * @param array                   $httpValidationGroups
      * @param ParamConverterManager   $paramConverterManager
+     * @param TranslatorInterface     $translator
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
         array $bypassParamConverterExceptionClasses,
         array $httpValidationGroups,
         ParamConverterManager $paramConverterManager,
+        TranslatorInterface $translator,
         ValidatorInterface $validator = null
     ) {
         $this->bypassParamConverterExceptionClasses = $bypassParamConverterExceptionClasses;
         $this->manager = $paramConverterManager;
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
+        $this->translator = $translator;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         usort(
@@ -121,8 +133,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     {
         $options = (array) $configuration->getOptions();
         $reflectionClass = new \ReflectionClass($configuration->getClass());
-
         $uuid = \uniqid('', false);
+
         // Null when the processed DTO is at the top level in case of nested DTO
         $actualDtoName = $request->attributes->get($configuration->getName())
             ? $configuration->getName()
@@ -141,7 +153,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $this->validate($object, $request, $preValidationOptions);
         }
 
-        $this->manager->apply($request, $config);
+        $this->applyParamConverters($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
         $request->attributes->set($configuration->getName(), $object);
@@ -306,6 +318,63 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $paramConfiguration[$name] = $config;
 
         return $paramConfiguration;
+    }
+
+    /**
+     * @param Request $request
+     * @param array   $configurations
+     *
+     * @return void
+     */
+    protected function applyParamConverters(Request $request, array $configurations): void
+    {
+        $errors = new ConstraintViolationList();
+
+        /** @var ParamConverter $paramConverterConfiguration */
+        foreach ($configurations as $paramConverterConfiguration) {
+            try {
+                $this->manager->apply($request, $paramConverterConfiguration);
+            } catch (DataTransferObjectValidationException $e) {
+                $errors->addAll($e->getViolations());
+            } catch (\Exception $e) {
+                $errors->add($this->getViolationFromException($request, $e, $paramConverterConfiguration));
+            }
+        }
+
+        if ($errors->count() !== 0) {
+            throw new DataTransferObjectValidationException($errors, Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @param Request        $request
+     * @param \Exception     $exception
+     * @param ParamConverter $paramConverter
+     *
+     * @return ConstraintViolation
+     */
+    protected function getViolationFromException(Request $request, \Exception $exception, ParamConverter $paramConverter): ConstraintViolation
+    {
+        $name = $paramConverter->getName();
+        $message = $exception->getMessage();
+        $value = $request->attributes->get($name);
+        $keyParts = \explode('_', $name);
+        $propertyName = \implode('_', \array_slice($keyParts, 2));
+
+        if ($exception instanceof NotFoundHttpException) {
+            $message = $this->translator->trans('dto_handler.entity_not_found', ['%value%' => $value]);
+        }
+
+        return new ConstraintViolation(
+            $message,
+            null,
+            [],
+            null,
+            $propertyName,
+            $value,
+            null,
+            $exception->getCode()
+        );
     }
 
     /**

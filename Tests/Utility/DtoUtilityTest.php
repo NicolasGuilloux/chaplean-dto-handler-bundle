@@ -89,9 +89,6 @@ class DtoUtilityTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::updateEntityList()
      *
      * @return void
-     *
-     * @expectedException \InvalidArgumentException
-     * @expectedExceptionMessage The new entity list must be an array or a Collection
      */
     public function testUpdateEntityListWithBadValue(): void
     {
@@ -99,6 +96,9 @@ class DtoUtilityTest extends MockeryTestCase
         $entity2 = new DummyEntity();
 
         $arrayCollection = new ArrayCollection([$entity1, $entity2]);
+
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('The new entity list must be an array or a Collection');
 
         DtoUtility::updateEntityList($arrayCollection, '');
     }

@@ -1,0 +1,2 @@
+dto_handler:
+    entity_not_found: 'Aucune entité ne peut être trouvée avec la valeur "%value%".'
