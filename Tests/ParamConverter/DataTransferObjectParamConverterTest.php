@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php /** @noinspection PhpUndefinedMethodInspection */
+declare(strict_types=1);
 
 /*
  * This file is part of the DtoHandlerBundle package.
@@ -11,6 +12,7 @@
 
 namespace Tests\Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
+use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter;
 use Doctrine\Common\Annotations\AnnotationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
@@ -19,6 +21,8 @@ use phpmock\mockery\PHPMockery;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -46,6 +50,11 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     private $manager;
 
     /**
+     * @var TranslatorInterface|MockInterface
+     */
+    private $translator;
+
+    /**
      * @var ValidatorInterface|MockInterface
      */
     private $validator;
@@ -58,6 +67,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         parent::setUp();
 
         $this->manager = \Mockery::mock(ParamConverterManager::class);
+        $this->translator = \Mockery::mock(TranslatorInterface::class);
         $this->validator = \Mockery::mock(ValidatorInterface::class);
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
@@ -69,6 +79,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
                 ['validation_group' => 'Default', 'http_status_code' => 400, 'priority' => 0],
             ],
             $this->manager,
+            $this->translator,
             $this->validator
         );
     }
@@ -165,6 +176,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -201,7 +213,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(7);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -220,6 +232,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -258,7 +271,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(7);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -277,6 +290,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -317,7 +331,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set(0, 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(7);
 
         $violations = new ConstraintViolationList();
 
@@ -368,6 +382,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -410,7 +425,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set(0, 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(7);
 
         $this->validator->shouldNotReceive('validate');
 
@@ -431,6 +446,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -465,7 +481,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(5);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
 
@@ -506,6 +522,8 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -517,8 +535,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      *
      * @throws \ReflectionException
      * @throws AnnotationException
-     *
-     * @expectedException \Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException
      */
     public function testApplyWithValidationWithoutHandler(): void
     {
@@ -538,7 +554,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(5);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -564,11 +580,14 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
+        self::expectException(DataTransferObjectValidationException::class);
+
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -580,8 +599,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      *
      * @throws \ReflectionException
      * @throws AnnotationException
-     *
-     * @expectedException \Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException
      */
     public function testApplyWithValidationWithConflictException(): void
     {
@@ -601,7 +618,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->times(5);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -637,11 +654,14 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
+        self::expectException(DataTransferObjectValidationException::class);
+
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
@@ -672,7 +692,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set(0, 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->once();
+        $this->manager->shouldReceive('apply')->never();
 
         $this->validator
             ->shouldReceive('validate')
@@ -711,5 +731,87 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $expectedDto->setAccessible('Accessible');
 
         self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::applyParamConverters()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getViolationFromException()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigure()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureProperty()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::autoConfigureOne()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::buildObject()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::validate()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::getValueFromRequest()
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
+     */
+    public function testApplyWithManagerFailure(): void
+    {
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+            ]
+        );
+
+        $entity = new DummyEntity();
+
+        $request = new Request();
+        $request->request->set('property1', 'Property 1');
+        $request->request->set('property2', 2);
+        $request->request->set('property3', $entity);
+        $request->request->set('property5', [$entity]);
+        $request->request->set('property7', [
+            ['keyname' => 'test1'],
+            ['keyname' => 'test2']
+        ]);
+
+        $this->validator
+            ->shouldReceive('validate')
+            ->once()
+            ->with(
+                \Mockery::type(DummyDataTransferObject::class),
+                null,
+                ['dto_raw_input_validation']
+            )
+            ->andReturn(new ConstraintViolationList());
+
+        $this->manager->shouldReceive('apply')->times(4);
+
+        $this->manager
+            ->shouldReceive('apply')
+            ->once()
+            ->andThrow(
+                new \Exception('Error')
+            );
+
+        $this->manager
+            ->shouldReceive('apply')
+            ->once()
+            ->andThrow(
+                new DataTransferObjectValidationException(new ConstraintViolationList())
+            );
+
+        $this->manager
+            ->shouldReceive('apply')
+            ->once()
+            ->andThrow(
+                new NotFoundHttpException('Error not found')
+            );
+
+        $this->translator
+            ->shouldReceive('trans')
+            ->once()
+            ->with('dto_handler.entity_not_found', \Mockery::type('array'))
+            ->andReturn('Not Found');
+
+        self::expectException(DataTransferObjectValidationException::class);
+
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
 }

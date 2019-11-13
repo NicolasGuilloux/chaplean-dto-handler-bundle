@@ -14,6 +14,7 @@ namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints;
 use Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityData;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Exception\MissingOptionsException;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
 
 /**
@@ -29,11 +30,11 @@ class UniqueEntityDataTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityData::__construct
      *
      * @return void
-     *
-     * @expectedException \Symfony\Component\Validator\Exception\MissingOptionsException
      */
     public function testConstructorFailEntityClass(): void
     {
+        self::expectException(MissingOptionsException::class);
+
         new UniqueEntityData([]);
     }
 
@@ -41,14 +42,14 @@ class UniqueEntityDataTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityData::__construct()
      *
      * @return void
-     *
-     * @expectedException \Symfony\Component\Validator\Exception\MissingOptionsException
      */
     public function testConstructorFailFields(): void
     {
         $options = [
             'entityClass' => 'entityClass'
         ];
+
+        self::expectException(MissingOptionsException::class);
 
         new UniqueEntityData($options);
     }

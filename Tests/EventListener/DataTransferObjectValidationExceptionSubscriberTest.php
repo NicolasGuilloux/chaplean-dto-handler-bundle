@@ -30,7 +30,7 @@ class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCas
     /**
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->dataTransferObjectValidationExceptionSubscriber = new DataTransferObjectValidationExceptionSubscriber();
 

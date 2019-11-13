@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.2
+
+Bug fix:
+ * Handles the exception returned by the manager during the conversion, and transforms it into violations.
+
 ## 2.2.1
 
 Bug fix:
