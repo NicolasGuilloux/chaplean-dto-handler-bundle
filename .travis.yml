@@ -9,7 +9,10 @@ branches:
         - master
 
 before_script:
-    - chmod 777 -R ./
+    - chmod 755 -R ./
+    - echo $USER
+    - groups
+    - ls -al
     - docker-compose up -d
     - docker-compose exec application composer install --prefer-dist --no-interaction
 
