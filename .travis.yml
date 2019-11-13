@@ -9,12 +9,7 @@ branches:
         - master
 
 before_script:
-    - chown travis:travis -R ./
     - chmod 777 -R ./
-    - echo $USER
-    - groups
-    - id
-    - ls -al
     - docker-compose up -d
     - docker-compose exec application composer install --prefer-dist --no-interaction
 
