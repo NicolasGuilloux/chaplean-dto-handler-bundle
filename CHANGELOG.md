@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.3
+
+Bug fix:
+ * Don't treat null as a valid value when converting a value to an entity.
+
 ## 2.2.2
 
 Bug fix:

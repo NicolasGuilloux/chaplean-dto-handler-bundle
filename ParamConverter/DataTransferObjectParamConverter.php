@@ -26,10 +26,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class DataTransferObjectParamConverter.
@@ -308,6 +308,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         if ($propertyConfigurationModel->getMapTo() !== null) {
             $config->setOptions(
                 [
+                    'strip_null' => true,
                     'mapping' => [
                         $name => $propertyConfigurationModel->getMapTo()
                     ]
@@ -373,7 +374,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $propertyName,
             $value,
             null,
-            $exception->getCode()
+            (string) $exception->getCode()
         );
     }
 
@@ -468,7 +469,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         }
 
         $violations = new ConstraintViolationList();
-        $violationsHandler = $options['violations'] ?? false;
+        $violationsHandler = $options['violations'] ?? '';
         $groups = $options['groups'] ?? null;
 
         if ($groups !== null) {
@@ -485,7 +486,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
                 $this->validator->validate($object, null, $group['validation_group'])
             );
 
-            if (!$violationsHandler && $violations->count() > 0) {
+            if ($violationsHandler === '' && $violations->count() > 0) {
                 throw new DataTransferObjectValidationException($violations, $group['http_status_code']);
             }
         }
