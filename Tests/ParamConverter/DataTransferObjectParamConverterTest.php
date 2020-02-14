@@ -17,18 +17,18 @@ use Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConve
 use Doctrine\Common\Annotations\AnnotationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
-use phpmock\mockery\PHPMockery;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
+use phpmock\mockery\PHPMockery;
 
 /**
  * Class DataTransferObjectParamConverterTest
@@ -328,7 +328,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
         $this->manager->shouldReceive('apply')->times(7);
@@ -422,7 +422,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
                 ['keyname' => 'test2']
             ]
         ]);
-        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
         $this->manager->shouldReceive('apply')->times(7);
@@ -689,7 +689,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('accessible', 'Accessible');
 
         $request->attributes->set('dataTransferObject', null);
-        $request->attributes->set(0, 'UselessAttribute');
+        $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
         $this->manager->shouldReceive('apply')->never();
