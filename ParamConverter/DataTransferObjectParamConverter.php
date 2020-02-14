@@ -308,6 +308,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         if ($propertyConfigurationModel->getMapTo() !== null) {
             $config->setOptions(
                 [
+                    'strip_null' => true,
                     'mapping' => [
                         $name => $propertyConfigurationModel->getMapTo()
                     ]
