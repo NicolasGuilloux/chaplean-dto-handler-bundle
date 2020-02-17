@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.4
+
+Bug fix:
+ * Fix unintended breaking change introduced in the previous release.
+
 ## 2.2.3
 
 Bug fix:

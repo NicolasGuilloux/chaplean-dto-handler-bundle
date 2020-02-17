@@ -5,7 +5,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Tests\EventListener;
 use Chaplean\Bundle\DtoHandlerBundle\EventListener\DataTransferObjectValidationExceptionSubscriber;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
-use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -61,7 +61,7 @@ class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCas
     {
         $exception = new BadRequestHttpException();
 
-        $event = \Mockery::mock(ExceptionEvent::class);
+        $event = \Mockery::mock(GetResponseForExceptionEvent::class);
         $event->shouldNotReceive('setResponse');
         $event->shouldReceive('getException')
             ->once()
@@ -90,7 +90,7 @@ class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCas
 
         $exception = new DataTransferObjectValidationException($violations);
 
-        $event = \Mockery::mock(ExceptionEvent::class);
+        $event = \Mockery::mock(GetResponseForExceptionEvent::class);
 
         $event->shouldReceive('getException')
             ->once()
