@@ -880,7 +880,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
                 'otherIndependentFile' => $otherIndependentFile,
                 'invalidJsonFile'      => $invalidJsonFile,
             ],
-            ['CONTENT_TYPE' => 'multipart/form-data']
+            ['CONTENT_TYPE' => 'multipart/form-data; boundary=------------------------06b40b7b1fa902cb']
         );
 
         $configuration = new ParamConverter(

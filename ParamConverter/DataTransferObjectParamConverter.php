@@ -505,7 +505,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     private function extractDataFromMultipartBody(Request $request): void
     {
-        if ($request->headers->get('CONTENT_TYPE') !== 'multipart/form-data') {
+        if (explode(';', $request->headers->get('CONTENT_TYPE', ''))[0] !== 'multipart/form-data') {
             return;
         }
 
