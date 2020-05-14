@@ -19,6 +19,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -131,6 +132,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration): bool
     {
+        $this->extractDataFromMultipartBody($request);
+
         $options = (array) $configuration->getOptions();
         $reflectionClass = new \ReflectionClass($configuration->getClass());
         $uuid = \uniqid('', false);
@@ -495,5 +498,26 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $violationsHandler,
             $violations
         );
+    }
+
+    /**
+     * @param Request $request
+     */
+    private function extractDataFromMultipartBody(Request $request): void
+    {
+        if ($request->headers->get('CONTENT_TYPE') !== 'multipart/form-data') {
+            return;
+        }
+
+        foreach ($request->files->all() as $key => $file) {
+            if (!in_array($file->getClientMimeType(), ['application/json', 'text/json'], true)) {
+                continue;
+            }
+
+            $json = json_decode(file_get_contents($file->getPathname()), true) ?? [];
+
+            $request->attributes->add($json);
+            $request->files->remove($key);
+        }
     }
 }

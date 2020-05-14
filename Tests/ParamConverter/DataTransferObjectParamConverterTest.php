@@ -19,6 +19,7 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -813,5 +814,152 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         self::expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     */
+    public function testSupportsJsonDataPayloadInMultipartBody(): void
+    {
+        $tmp = sys_get_temp_dir();
+
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
+        fwrite($jsonData, json_encode([
+            'property1' => 'Property 1',
+            'property2' => 2,
+            'property3' => 'test',
+            'property5' => ['test'],
+            'property7' => [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+            ]
+        ]));
+        fclose($jsonData);
+        $jsonData = new UploadedFile(
+            $jsonDataPath,
+            'jsonData',
+            'application/json'
+        );
+
+        $jsonDataOverride = fopen(tempnam($tmp, 'jsonDataOverride'), 'w');
+        $jsonDataOverridePath = stream_get_meta_data($jsonDataOverride)['uri'];
+        fwrite($jsonDataOverride, json_encode(['property1' => 'Overridden Property 1']));
+        fclose($jsonDataOverride);
+        $jsonDataOverride = new UploadedFile(
+            $jsonDataOverridePath,
+            'jsonDataOverride',
+            'text/json'
+        );
+
+        $otherIndependentFile = fopen(tempnam($tmp, 'file3'), 'w');
+        $otherIndependentFilePath = stream_get_meta_data($otherIndependentFile)['uri'];
+        fwrite($otherIndependentFile, json_encode(['property1' => 'Ignored Property 1']));
+        fclose($otherIndependentFile);
+        $otherIndependentFile = new UploadedFile(
+            $otherIndependentFilePath,
+            'otherIndependentFile',
+            'image/png'
+        );
+
+        $invalidJsonFile = fopen(tempnam($tmp, 'invalidJsonFile'), 'w');
+        $invalidJsonFilePath = stream_get_meta_data($invalidJsonFile)['uri'];
+        fwrite($invalidJsonFile, '}{');
+        fclose($invalidJsonFile);
+        $invalidJsonFile = new UploadedFile(
+            $invalidJsonFilePath,
+            'invalidJsonFile',
+            'application/json'
+        );
+
+        $request = new Request([], [], [], [],
+            [
+                'jsonData'             => $jsonData,
+                'jsonDataOverride'     => $jsonDataOverride,
+                'otherIndependentFile' => $otherIndependentFile,
+                'invalidJsonFile'      => $invalidJsonFile,
+            ],
+            ['CONTENT_TYPE' => 'multipart/form-data']
+        );
+
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+                'options'   => ['validate' => false],
+            ]
+        );
+
+        $this->manager->shouldReceive('apply');
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+
+        $expectedDto = new DummyDataTransferObject();
+        $expectedDto->property1 = 'Overridden Property 1';
+        $expectedDto->property2 = 2;
+        $expectedDto->property3 = 'test';
+        $expectedDto->property5 = ['test'];
+        $expectedDto->property7 = [
+            ['keyname' => 'test1'],
+            ['keyname' => 'test2'],
+        ];
+
+        self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
+
+        $files = $request->files->all();
+        $this->assertCount(1, $files);
+        $this->assertSame('otherIndependentFile', $files['otherIndependentFile']->getClientOriginalName());
+    }
+
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     */
+    public function testIgnoresFilesWhenNotMultipartBody(): void
+    {
+        $tmp = sys_get_temp_dir();
+
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
+        fwrite($jsonData, json_encode([
+            'property1' => 'Property 1',
+            'property2' => 2,
+            'property3' => 'test',
+            'property5' => ['test'],
+            'property7' => [
+                ['keyname' => 'test1'],
+                ['keyname' => 'test2'],
+            ]
+        ]));
+        fclose($jsonData);
+        $jsonData = new UploadedFile(
+            $jsonDataPath,
+            'jsonData',
+            'application/json'
+        );
+
+        $request = new Request([], [], [], [], ['jsonData' => $jsonData]);
+
+        $configuration = new ParamConverter(
+            [
+                'name'      => 'dataTransferObject',
+                'class'     => DummyDataTransferObject::class,
+                'converter' => 'fos_rest.request_body',
+                'options'   => ['validate' => false],
+            ]
+        );
+
+        $this->manager->shouldReceive('apply');
+        $this->dataTransferObjectParamConverter->apply($request, $configuration);
+
+        $expectedDto = new DummyDataTransferObject();
+
+        self::assertEquals($expectedDto, $request->attributes->get('dataTransferObject'));
+
+        $files = $request->files->all();
+        $this->assertCount(1, $files);
+        $this->assertSame('jsonData', $files['jsonData']->getClientOriginalName());
     }
 }

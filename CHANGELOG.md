@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0
+
+New feature:
+ * The DTO handler can now also bind data from a json file in a multipart/form-data request. It now loads the content with the following priority: `Request > File > Attributes > Query`. The json file in the body is identified by the mime type `application/json` or `text/json`. The DTO handler will also remove these files from the Reques object to leave you with only the other files in your multipart body (such as uploaded images).
+
 ## 2.2.4
 
 Bug fix:
