@@ -19,6 +19,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -40,6 +41,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class DataTransferObjectParamConverter implements ParamConverterInterface
 {
+    const MULTIPART_FORM_DATA = 'multipart/form-data';
+    const JSON_MIME_TYPE = ['application/json', 'text/json'];
+
     /**
      * @var array
      */
@@ -131,6 +135,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration): bool
     {
+        $this->extractDataFromMultipartBody($request);
+
         $options = (array) $configuration->getOptions();
         $reflectionClass = new \ReflectionClass($configuration->getClass());
         $uuid = \uniqid('', false);
@@ -495,5 +501,49 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $violationsHandler,
             $violations
         );
+    }
+
+    /**
+     * @param Request $request
+     */
+    private function extractDataFromMultipartBody(Request $request): void
+    {
+        if (!$this->isMultipart($request)) {
+            return;
+        }
+
+        foreach ($request->files->all() as $key => $file) {
+            if (!$this->isJson($file)) {
+                continue;
+            }
+
+            $json = json_decode(file_get_contents($file->getPathname()), true) ?? [];
+
+            $request->attributes->add($json);
+            $request->files->remove($key);
+        }
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function isMultipart(Request $request): bool
+    {
+        $contentType = $request->headers->get('CONTENT_TYPE', '');
+        $prefix = explode(';', $contentType)[0];
+
+        return $prefix === self::MULTIPART_FORM_DATA;
+    }
+
+    /**
+     * @param $file
+     *
+     * @return bool
+     */
+    private function isJson($file): bool
+    {
+        return in_array($file->getClientMimeType(), self::JSON_MIME_TYPE, true);
     }
 }
