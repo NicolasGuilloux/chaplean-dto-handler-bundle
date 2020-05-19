@@ -41,6 +41,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class DataTransferObjectParamConverter implements ParamConverterInterface
 {
+    const MULTIPART_FORM_DATA = 'multipart/form-data';
+    const JSON_MIME_TYPE = ['application/json', 'text/json'];
+
     /**
      * @var array
      */
@@ -505,12 +508,12 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     private function extractDataFromMultipartBody(Request $request): void
     {
-        if (explode(';', $request->headers->get('CONTENT_TYPE', ''))[0] !== 'multipart/form-data') {
+        if (!$this->isMultipart($request)) {
             return;
         }
 
         foreach ($request->files->all() as $key => $file) {
-            if (!in_array($file->getClientMimeType(), ['application/json', 'text/json'], true)) {
+            if (!$this->isJson($file)) {
                 continue;
             }
 
@@ -519,5 +522,28 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             $request->attributes->add($json);
             $request->files->remove($key);
         }
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function isMultipart(Request $request): bool
+    {
+        $contentType = $request->headers->get('CONTENT_TYPE', '');
+        $prefix = explode(';', $contentType)[0];
+
+        return $prefix === self::MULTIPART_FORM_DATA;
+    }
+
+    /**
+     * @param $file
+     *
+     * @return bool
+     */
+    private function isJson($file): bool
+    {
+        return in_array($file->getClientMimeType(), self::JSON_MIME_TYPE, true);
     }
 }
