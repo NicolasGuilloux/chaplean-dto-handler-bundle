@@ -11,11 +11,10 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
-use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor;
+use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Doctrine\Common\Annotations\AnnotationException;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
@@ -179,9 +178,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param ParamConverter $configuration
      *
      * @return boolean
-     *
-     * @throws \ReflectionException
-     * @throws AnnotationException
      */
     public function supports(ParamConverter $configuration): bool
     {
@@ -191,16 +187,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return false;
         }
 
-        if (\in_array($class, $this->taggedDtoClasses, true)) {
-            return true;
-        }
-
-        $propertyReflectionClass = new \ReflectionClass($class);
-
-        $annotationReader = new AnnotationReader();
-        $typeAnnotation = $annotationReader->getClassAnnotation($propertyReflectionClass, DTO::class);
-
-        return $typeAnnotation !== null;
+        return is_subclass_of($class, DataTransferObjectInterface::class);
     }
 
     /**

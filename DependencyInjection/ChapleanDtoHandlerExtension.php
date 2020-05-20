@@ -33,8 +33,8 @@ class ChapleanDtoHandlerExtension extends Extension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
-        $container->setParameter('chaplean_dto_handler', $config);
-        $this->setParameters($container, 'chaplean_dto_handler', $config);
+        $container->setParameter(Configuration::CONFIG_NODE, $config);
+        $this->setParameters($container, Configuration::CONFIG_NODE, $config);
     }
 
     /**

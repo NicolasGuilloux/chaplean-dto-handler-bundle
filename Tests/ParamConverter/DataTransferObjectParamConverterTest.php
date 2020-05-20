@@ -1,5 +1,4 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /*
  * This file is part of the DtoHandlerBundle package.
@@ -100,9 +99,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::setTaggedDtoServices()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassWithTag(): void
     {
@@ -126,9 +122,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassDto(): void
     {
@@ -145,9 +138,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassNotDto(): void
     {
@@ -164,9 +154,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsNotClass(): void
     {
@@ -581,7 +568,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -655,7 +642,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -811,7 +798,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with('dto_handler.entity_not_found', \Mockery::type('array'))
             ->andReturn('Not Found');
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -819,12 +806,15 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
      */
     public function testSupportsJsonDataPayloadInMultipartBody(): void
     {
         $tmp = sys_get_temp_dir();
 
-        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'wb');
         $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
         fwrite($jsonData, json_encode([
             'property1' => 'Property 1',
@@ -843,7 +833,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'application/json'
         );
 
-        $jsonDataOverride = fopen(tempnam($tmp, 'jsonDataOverride'), 'w');
+        $jsonDataOverride = fopen(tempnam($tmp, 'jsonDataOverride'), 'wb');
         $jsonDataOverridePath = stream_get_meta_data($jsonDataOverride)['uri'];
         fwrite($jsonDataOverride, json_encode(['property1' => 'Overridden Property 1']));
         fclose($jsonDataOverride);
@@ -853,7 +843,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'text/json'
         );
 
-        $otherIndependentFile = fopen(tempnam($tmp, 'file3'), 'w');
+        $otherIndependentFile = fopen(tempnam($tmp, 'file3'), 'wb');
         $otherIndependentFilePath = stream_get_meta_data($otherIndependentFile)['uri'];
         fwrite($otherIndependentFile, json_encode(['property1' => 'Ignored Property 1']));
         fclose($otherIndependentFile);
@@ -863,7 +853,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'image/png'
         );
 
-        $invalidJsonFile = fopen(tempnam($tmp, 'invalidJsonFile'), 'w');
+        $invalidJsonFile = fopen(tempnam($tmp, 'invalidJsonFile'), 'wb');
         $invalidJsonFilePath = stream_get_meta_data($invalidJsonFile)['uri'];
         fwrite($invalidJsonFile, '}{');
         fclose($invalidJsonFile);
@@ -916,12 +906,15 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
      */
     public function testIgnoresFilesWhenNotMultipartBody(): void
     {
         $tmp = sys_get_temp_dir();
 
-        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'wb');
         $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
         fwrite($jsonData, json_encode([
             'property1' => 'Property 1',
