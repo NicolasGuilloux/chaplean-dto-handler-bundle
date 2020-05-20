@@ -41,8 +41,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class DataTransferObjectParamConverter implements ParamConverterInterface
 {
-    const MULTIPART_FORM_DATA = 'multipart/form-data';
-    const JSON_MIME_TYPE = ['application/json', 'text/json'];
+    public const MULTIPART_FORM_DATA = 'multipart/form-data';
+    public const JSON_MIME_TYPE = ['application/json', 'text/json'];
 
     /**
      * @var array
@@ -78,11 +78,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @var ValidatorInterface
      */
     protected $validator;
-
-    /**
-     * @var bool
-     */
-    protected static $isTopLevelDto = true;
 
     /**
      * DataTransferObjectParamConverter constructor.
@@ -140,14 +135,14 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration): bool
     {
-        $isTopLevelDto = static::$isTopLevelDto;
-        static::$isTopLevelDto = false;
-
-        $this->extractDataFromMultipartBody($request);
-
         $options = (array) $configuration->getOptions();
         $reflectionClass = new \ReflectionClass($configuration->getClass());
         $uuid = \uniqid('', false);
+        $isSubDto = $options['isSubDto'] ?? false;
+
+        if (!$isSubDto) {
+            $this->extractDataFromMultipartBody($request);
+        }
 
         // Null when the processed DTO is at the top level in case of nested DTO
         $actualDtoName = $request->attributes->get($configuration->getName())
@@ -158,7 +153,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
 
         // Validate raw input only the top level DTO
-        if ($isTopLevelDto) {
+        if (!$isSubDto) {
             $object = $this->buildObject($request, $configuration, $uuid, true);
 
             $preValidationOptions = $options;
@@ -173,8 +168,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $request->attributes->set($configuration->getName(), $object);
 
         // Validate only the top level DTO
-        if ($isTopLevelDto) {
-            static::$isTopLevelDto = true;
+        if (!$isSubDto) {
             $this->validate($object, $request, $options);
         }
 
@@ -348,6 +342,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         /** @var ParamConverter $paramConverterConfiguration */
         foreach ($configurations as $paramConverterConfiguration) {
+            $options = $paramConverterConfiguration->getOptions();
+            $options['isSubDto'] = $options['isSubDto'] ?? true;
+            $paramConverterConfiguration->setOptions($options);
+
             try {
                 $this->manager->apply($request, $paramConverterConfiguration);
             } catch (DataTransferObjectValidationException $e) {
@@ -502,8 +500,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             );
 
             if ($violationsHandler === '' && $violations->count() > 0) {
-                static::$isTopLevelDto = true;
-
                 throw new DataTransferObjectValidationException($violations, $group['http_status_code']);
             }
         }
@@ -549,7 +545,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     }
 
     /**
-     * @param $file
+     * @param UploadedFile $file
      *
      * @return bool
      */
