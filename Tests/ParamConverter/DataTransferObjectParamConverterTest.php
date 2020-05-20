@@ -428,7 +428,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
 
         $this->manager->shouldReceive('apply')->times(7);
 
-        $this->validator->shouldNotReceive('validate');
+        $this->validator->shouldReceive('validate')->andReturn(new ConstraintViolationList());
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 

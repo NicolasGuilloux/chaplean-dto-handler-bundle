@@ -80,6 +80,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected $validator;
 
     /**
+     * @var bool
+     */
+    protected static $isTopLevelDto = true;
+
+    /**
      * DataTransferObjectParamConverter constructor.
      *
      * @param array                   $bypassParamConverterExceptionClasses
@@ -135,6 +140,9 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration): bool
     {
+        $isTopLevelDto = static::$isTopLevelDto;
+        static::$isTopLevelDto = false;
+
         $this->extractDataFromMultipartBody($request);
 
         $options = (array) $configuration->getOptions();
@@ -150,7 +158,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $config = $this->autoConfigure($reflectionClass, $request, $uuid, $actualDtoName);
 
         // Validate raw input only the top level DTO
-        if ($actualDtoName === null) {
+        if ($isTopLevelDto) {
             $object = $this->buildObject($request, $configuration, $uuid, true);
 
             $preValidationOptions = $options;
@@ -165,7 +173,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $request->attributes->set($configuration->getName(), $object);
 
         // Validate only the top level DTO
-        if ($actualDtoName === null) {
+        if ($isTopLevelDto) {
+            static::$isTopLevelDto = true;
             $this->validate($object, $request, $options);
         }
 
@@ -493,6 +502,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             );
 
             if ($violationsHandler === '' && $violations->count() > 0) {
+                static::$isTopLevelDto = true;
+
                 throw new DataTransferObjectValidationException($violations, $group['http_status_code']);
             }
         }
