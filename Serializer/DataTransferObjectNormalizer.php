@@ -4,7 +4,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Serializer;
 
 use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Serializer;
 
 /**
@@ -14,10 +14,8 @@ use Symfony\Component\Serializer\Serializer;
  * @author    Nicolas Guilloux <nguilloux@richcongress.com>
  * @copyright 2014 - 2020 RichCongress (https://www.richcongress.com)
  */
-class DataTransferObjectNormalizer implements ContextAwareNormalizerInterface
+class DataTransferObjectNormalizer implements NormalizerInterface
 {
-    public const CONTEXT_TAG = '_dto_transformation';
-
     /**
      * @var Serializer
      */
@@ -43,7 +41,7 @@ class DataTransferObjectNormalizer implements ContextAwareNormalizerInterface
      * @throws \ReflectionException
      * @throws ExceptionInterface
      */
-    public function supportsNormalization($data, $format = null, array $context = []): array
+    public function normalize($data, $format = null, array $context = []): array
     {
         $reflectionClass = new \ReflectionClass($data);
         $body = [];
@@ -62,18 +60,13 @@ class DataTransferObjectNormalizer implements ContextAwareNormalizerInterface
     }
 
     /**
-     * @param mixed       $data
-     * @param string|null $format
-     * @param array       $context
+     * @param mixed $data
+     * @param null  $format
      *
-     * @return array|bool|object
+     * @return bool
      */
-    public function normalize($data, $format = null, array $context = [])
+    public function supportsNormalization($data, $format = null): bool
     {
-        if (!($context[static::CONTEXT_TAG] ?? false)) {
-            return false;
-        }
-
-        return $data instanceof DataTransferObjectInterface;
+        return is_object($data) && $data instanceof DataTransferObjectInterface;
     }
 }

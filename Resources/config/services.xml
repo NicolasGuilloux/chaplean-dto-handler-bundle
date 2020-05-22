@@ -24,9 +24,10 @@
 
         <!-- Serializer -->
         <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectDenormalizer">
+            <argument key="$paramConverterManager" type="service" id="sensio_framework_extra.converter.manager" />
             <tag name="serializer.denormalizer" priority="50" />
         </service>
-        <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectNormalizer">
+        <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectNormalizer" lazy="true">
             <argument key="$serializer" type="service" id="serializer" />
             <tag name="serializer.normalizer" priority="50" />
         </service>
