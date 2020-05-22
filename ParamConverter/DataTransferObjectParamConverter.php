@@ -43,6 +43,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 {
     public const MULTIPART_FORM_DATA = 'multipart/form-data';
     public const JSON_MIME_TYPE = ['application/json', 'text/json'];
+    public const SUB_REQUEST_HEADER = 'subRequestDtoHandler';
 
     /**
      * @var array
@@ -125,24 +126,26 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     }
 
     /**
-     * @param Request        $request
+     * @param Request        $originalRequest
      * @param ParamConverter $configuration
      *
      * @return boolean
      *
-     * @throws \ReflectionException
      * @throws AnnotationException
+     * @throws \ReflectionException
      */
-    public function apply(Request $request, ParamConverter $configuration): bool
+    public function apply(Request $originalRequest, ParamConverter $configuration): bool
     {
+        $isSubDto = $originalRequest->headers->has(static::SUB_REQUEST_HEADER);
+
+        if (!$isSubDto) {
+            $this->extractDataFromMultipartBody($originalRequest);
+        }
+
+        $request = self::cloneRequest($originalRequest);
         $options = (array) $configuration->getOptions();
         $reflectionClass = new \ReflectionClass($configuration->getClass());
         $uuid = \uniqid('', false);
-        $isSubDto = $options['isSubDto'] ?? false;
-
-        if (!$isSubDto) {
-            $this->extractDataFromMultipartBody($request);
-        }
 
         // Null when the processed DTO is at the top level in case of nested DTO
         $actualDtoName = $request->attributes->get($configuration->getName())
@@ -165,11 +168,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->applyParamConverters($request, $config);
 
         $object = $this->buildObject($request, $configuration, $uuid);
-        $request->attributes->set($configuration->getName(), $object);
+        $originalRequest->attributes->set($configuration->getName(), $object);
 
-        // Validate only the top level DTO
+        // Validate only the top level DTO and load it to the real request
         if (!$isSubDto) {
-            $this->validate($object, $request, $options);
+            $this->validate($object, $originalRequest, $options);
         }
 
         return true;
@@ -552,5 +555,18 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     private function isJson($file): bool
     {
         return in_array($file->getClientMimeType(), self::JSON_MIME_TYPE, true);
+    }
+
+    /**
+     * @param Request $originalRequest
+     *
+     * @return Request
+     */
+    private static function cloneRequest(Request $originalRequest): Request
+    {
+        $request = clone $originalRequest;
+        $request->headers->set(static::SUB_REQUEST_HEADER, true);
+
+        return $request;
     }
 }
