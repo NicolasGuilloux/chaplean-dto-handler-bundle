@@ -345,10 +345,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         /** @var ParamConverter $paramConverterConfiguration */
         foreach ($configurations as $paramConverterConfiguration) {
-            $options = $paramConverterConfiguration->getOptions();
-            $options['isSubDto'] = $options['isSubDto'] ?? true;
-            $paramConverterConfiguration->setOptions($options);
-
             try {
                 $this->manager->apply($request, $paramConverterConfiguration);
             } catch (DataTransferObjectValidationException $e) {
