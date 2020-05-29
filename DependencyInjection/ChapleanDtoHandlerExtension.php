@@ -16,6 +16,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
+/**
+ * Class ChapleanDtoHandlerExtension
+ *
+ * @package   Chaplean\Bundle\DtoHandlerBundle\DependencyInjection
+ * @author    Nicolas Guilloux <nguilloux@richcongress.com>
+ * @copyright 2014 - 2020 RichCongress (https://www.richcongress.com)
+ */
 class ChapleanDtoHandlerExtension extends Extension
 {
     /**

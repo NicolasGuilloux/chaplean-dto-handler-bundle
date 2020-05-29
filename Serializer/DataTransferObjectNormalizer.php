@@ -2,7 +2,12 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\Serializer;
 
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
 use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Serializer;
@@ -17,6 +22,16 @@ use Symfony\Component\Serializer\Serializer;
 class DataTransferObjectNormalizer implements NormalizerInterface
 {
     /**
+     * @var AnnotationReader
+     */
+    protected $annotationReader;
+
+    /**
+     * @var PropertyAccessor
+     */
+    protected $propertyAccessor;
+
+    /**
      * @var Serializer
      */
     protected $serializer;
@@ -28,6 +43,8 @@ class DataTransferObjectNormalizer implements NormalizerInterface
      */
     public function __construct(Serializer $serializer)
     {
+        $this->annotationReader = new AnnotationReader();
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
         $this->serializer = $serializer;
     }
 
@@ -47,8 +64,8 @@ class DataTransferObjectNormalizer implements NormalizerInterface
         $body = [];
 
         foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-            $key = $reflectionProperty->getName();
-            $value = $reflectionProperty->getValue($data);
+            $key = $this->getKey($reflectionProperty);
+            $value = $this->getValue($reflectionProperty, $data);
 
             $body[$key] = $value;
         }
@@ -68,5 +85,42 @@ class DataTransferObjectNormalizer implements NormalizerInterface
     public function supportsNormalization($data, $format = null): bool
     {
         return is_object($data) && $data instanceof DataTransferObjectInterface;
+    }
+
+    /**
+     * @param \ReflectionProperty $property
+     *
+     * @return string
+     */
+    protected function getKey(\ReflectionProperty $property): string
+    {
+        /** @var Field|null $fieldAnnotation */
+        $fieldAnnotation = $this->annotationReader->getPropertyAnnotation($property, Field::class);
+
+        return $fieldAnnotation !== null
+            ? $fieldAnnotation->keyname
+            : $property->getName();
+    }
+
+    /**
+     * @param \ReflectionProperty $property
+     * @param mixed               $data
+     *
+     * @return mixed
+     */
+    protected function getValue(\ReflectionProperty $property, $data)
+    {
+        /** @var MapTo|null $mapToAnnotation */
+        $mapToAnnotation = $this->annotationReader->getPropertyAnnotation($property, MapTo::class);
+        $value = $property->getValue($data);
+
+        if ($mapToAnnotation === null) {
+            return $value;
+        }
+
+        return $this->propertyAccessor->getValue(
+            $value,
+            $mapToAnnotation->keyname
+        );
     }
 }
