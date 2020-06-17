@@ -12,6 +12,11 @@ Breaking Change:
 New feature:
  * Implementation of a DTO normalizer/denormalizer for Symfony's Serializer
 
+## 2.3.2
+
+Bug fix:
+ * Fix the top level DTO validation again. Encapsulate the DataTransferObjectParamConverter request into cloned request to avoid working on original request.
+
 ## 2.3.1
 
 Bug fix:
