@@ -97,7 +97,7 @@ class DtoUtility
      *
      * @return array
      */
-    public static function getProperties($entity, array $propertyNames): array
+    protected static function getProperties($entity, array $propertyNames): array
     {
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
         $properties = [];

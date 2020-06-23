@@ -107,6 +107,7 @@ class DtoUtilityTest extends MockeryTestCase
 
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::updateEntityList()
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::getProperties()
      *
      * @return void
      */
@@ -133,23 +134,6 @@ class DtoUtilityTest extends MockeryTestCase
         self::assertFalse($arrayCollection->contains($entity1));
         self::assertTrue($arrayCollection->contains($entity2));
         self::assertTrue($arrayCollection->contains($entity3));
-    }
-
-    /**
-     * @covers \Chaplean\Bundle\DtoHandlerBundle\Utility\DtoUtility::getProperties()
-     *
-     * @return void
-     */
-    public function testGetProperties(): void
-    {
-        $entity = new DummyEntity();
-        $entity->name = 'name1';
-        $entity->type = 'type1';
-
-        self::assertSame(
-            ['name' => 'name1', 'type' => 'type1'],
-            DtoUtility::getProperties($entity, ['name', 'type'])
-        );
     }
 
     /**
