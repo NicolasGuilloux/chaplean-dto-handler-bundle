@@ -8,6 +8,8 @@ Doctrine supports badly the changes in an `ArrayCollection` of entities in a `On
 
 The function `updateEntityList` updates an existing `ArrayCollection` from an traversable object without replacing the instance of the input `ArrayCollection` to avoid this bug.
 
+It is possible to give in 3rd parameter the list of properties on which the comparison of the entities is made.
+
 ```php
 /**
  * @param DummyEntity $dto
@@ -15,7 +17,7 @@ The function `updateEntityList` updates an existing `ArrayCollection` from an tr
  * @return self
  */
 public function updateRelationship(DummyEntity $dto): self
-    DtoUtility::updateEntityList($this->relationship, $dto->newValues);
+    DtoUtility::updateEntityList($this->relationship, $dto->newValues, ['id']);
 
     return $this;
 }
