@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3
+
+New feature:
+ * Added a new parameter to the DtoUtility::updateEntityList() function. It allows to give the list of properties on which the comparison of the entities is made.
+
 ## 2.3.2
 
 Bug fix:

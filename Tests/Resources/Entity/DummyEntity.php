@@ -24,6 +24,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DummyEntity
 {
+    public $name;
+
+    public $type;
+
+    public $other;
+
     /**
      * @return integer
      */
