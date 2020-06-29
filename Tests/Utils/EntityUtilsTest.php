@@ -9,7 +9,6 @@ use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
 
 class EntityUtilsTest extends TestCase
 {
-
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\Utils\EntityUtils::updateCollection
      *
@@ -27,6 +26,7 @@ class EntityUtilsTest extends TestCase
         $newArrayCollection = EntityUtils::updateCollection($arrayCollection, $updateArrayCollection);
 
         self::assertSame($newArrayCollection, $arrayCollection);
+        self::assertCount(2, $arrayCollection);
         self::assertFalse($arrayCollection->contains($entity1));
         self::assertTrue($arrayCollection->contains($entity2));
         self::assertTrue($arrayCollection->contains($entity3));
@@ -49,6 +49,7 @@ class EntityUtilsTest extends TestCase
         $newArrayCollection = EntityUtils::updateCollection($arrayCollection, $updateArrayCollection);
 
         self::assertSame($newArrayCollection, $arrayCollection);
+        self::assertCount(2, $arrayCollection);
         self::assertFalse($arrayCollection->contains($entity1));
         self::assertTrue($arrayCollection->contains($entity2));
         self::assertTrue($arrayCollection->contains($entity3));
@@ -72,5 +73,25 @@ class EntityUtilsTest extends TestCase
         $this->expectExceptionMessage('The new entity list must be an array or a Collection');
 
         EntityUtils::updateCollection($arrayCollection, $badValue);
+    }
+
+    /**
+     * @covers \Chaplean\Bundle\DtoHandlerBundle\Utils\EntityUtils::updateCollection
+     *
+     * @return void
+     */
+    public function testUpdateCollectionIsUntouchedWhenNewCollectionContainsTheSameElements(): void
+    {
+        $entity1 = new DummyEntity();
+        $entity2 = new DummyEntity();
+        $entity3 = new DummyEntity();
+
+        $arrayCollection = new ArrayCollection([$entity1, $entity2, $entity3]);
+        $updateArrayCollection = new ArrayCollection([$entity1, $entity2, $entity3]);
+
+        $originalArrayCollection = clone $arrayCollection;
+        $newArrayCollection = EntityUtils::updateCollection($arrayCollection, $updateArrayCollection);
+
+        self::assertEquals($originalArrayCollection, $newArrayCollection);
     }
 }
