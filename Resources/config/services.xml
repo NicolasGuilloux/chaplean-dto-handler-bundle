@@ -28,7 +28,7 @@
             <tag name="serializer.denormalizer" priority="50" />
         </service>
         <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectNormalizer" lazy="true">
-            <argument key="$serializer" type="service" id="serializer" />
+            <argument key="$normalizer" type="service" id="serializer" />
             <tag name="serializer.normalizer" priority="50" />
         </service>
         <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\EntityIdNormalizer">

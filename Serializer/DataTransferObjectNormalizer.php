@@ -10,7 +10,6 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Serializer;
 
 /**
  * Class DataTransferObjectNormalizer
@@ -21,6 +20,8 @@ use Symfony\Component\Serializer\Serializer;
  */
 class DataTransferObjectNormalizer implements NormalizerInterface
 {
+    public const DTO_ENTITY_NORMALIZATION = 'data_transfer_object_entity_normalization';
+
     /**
      * @var AnnotationReader
      */
@@ -32,20 +33,20 @@ class DataTransferObjectNormalizer implements NormalizerInterface
     protected $propertyAccessor;
 
     /**
-     * @var Serializer
+     * @var NormalizerInterface
      */
-    protected $serializer;
+    protected $normalizer;
 
     /**
      * DataTransferObjectNormalizer constructor.
      *
-     * @param Serializer $serializer
+     * @param NormalizerInterface $normalizer
      */
-    public function __construct(Serializer $serializer)
+    public function __construct(NormalizerInterface $normalizer)
     {
         $this->annotationReader = new AnnotationReader();
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
-        $this->serializer = $serializer;
+        $this->normalizer = $normalizer;
     }
 
     /**
@@ -71,9 +72,13 @@ class DataTransferObjectNormalizer implements NormalizerInterface
         }
 
         $subContext = $context;
-        $subContext[EntityIdNormalizer::CONTEXT_TAG] = true;
+        $normalizeSubEntities = $context[self::DTO_ENTITY_NORMALIZATION] ?? true;
 
-        return $this->serializer->normalize($body, $format, $subContext);
+        if (!$normalizeSubEntities) {
+            $subContext[EntityIdNormalizer::CONTEXT_TAG] = true;
+        }
+
+        return $this->normalizer->normalize($body, $format, $subContext);
     }
 
     /**
