@@ -71,7 +71,7 @@ class DataTransferObjectNormalizer implements NormalizerInterface
         }
 
         $subContext = $context;
-        $subContext[EntityIdNormalizer::class] = true;
+        $subContext[EntityIdNormalizer::CONTEXT_TAG] = true;
 
         return $this->serializer->normalize($body, $format, $subContext);
     }
