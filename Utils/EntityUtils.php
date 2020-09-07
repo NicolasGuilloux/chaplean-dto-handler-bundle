@@ -19,37 +19,46 @@ class EntityUtils
      * By default, this function uses `spl_object_hash` to get a unique id per object to compare old and new elements.
      * The caller can provide a callback $getId to change how the unique id is computed.
      *
+     * When there is an id match between $entityList and $newEntityList items, the default is to keep the original item untouched.
+     * The caller can provide a callback $merge to allow updating the kept value with the matched new value.
+     *
      * @param Collection         $entityList
      * @param \Traversable|array $newEntityList
      * @param callable|null      $getId
+     * @param callable|null      $merge
      *
      * @return Collection
      */
-    public static function updateCollection(Collection $entityList, $newEntityList, ?callable $getId = null): Collection
+    public static function updateCollection(
+        Collection $entityList,
+        $newEntityList,
+        ?callable $getId = null,
+        ?callable $merge = null
+    ): Collection
     {
         if (!is_array($newEntityList) && !($newEntityList instanceof \Traversable)) {
             throw new \InvalidArgumentException('The new entity list must be an array or a Collection');
         }
 
         $getId = $getId ?? function($e) { return spl_object_hash($e); };
-        $mapKeyFromValue = function ($f, $list) {
-            $result = [];
+        $newEntityListWithId = [];
 
-            foreach ($list as $elem) {
-                $result[$f($elem)] = $elem;
-            }
+        foreach ($newEntityList as $elem) {
+            $newEntityListWithId[$getId($elem)] = $elem;
+        }
 
-            return $result;
-        };
+        foreach ($entityList as $id => $value) {
+            $valueId = $getId($value);
 
-        $entityListWithId = $mapKeyFromValue($getId, $entityList);
-        $newEntityListWithId = $mapKeyFromValue($getId, $newEntityList);
-
-        foreach ($entityListWithId as $id => $value) {
-            if (!\array_key_exists($id, $newEntityListWithId)) {
+            if (!\array_key_exists($valueId, $newEntityListWithId)) {
                 $entityList->removeElement($value);
             } else {
-                unset($newEntityListWithId[$id]);
+                $entity = $entityList->get($id);
+                if ($merge !== null) {
+                    $merge($entity, $newEntityListWithId[$valueId]);
+                }
+
+                unset($newEntityListWithId[$valueId]);
             }
         }
 
