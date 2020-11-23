@@ -61,24 +61,22 @@ class DataTransferObjectNormalizer implements NormalizerInterface
      */
     public function normalize($data, $format = null, array $context = []): array
     {
+        $normalizeSubEntities = $context[self::DTO_ENTITY_NORMALIZATION] ?? true;
         $reflectionClass = new \ReflectionClass($data);
         $body = [];
 
         foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
             $key = $this->getKey($reflectionProperty);
-            $value = $this->getValue($reflectionProperty, $data);
+            $value = $this->getValue($reflectionProperty, $data, $normalizeSubEntities);
 
             $body[$key] = $value;
         }
 
-        $subContext = $context;
-        $normalizeSubEntities = $context[self::DTO_ENTITY_NORMALIZATION] ?? true;
-
         if (!$normalizeSubEntities) {
-            $subContext[EntityIdNormalizer::CONTEXT_TAG] = true;
+            $context[EntityIdNormalizer::CONTEXT_TAG] = true;
         }
 
-        return $this->normalizer->normalize($body, $format, $subContext);
+        return $this->normalizer->normalize($body, $format, $context);
     }
 
     /**
@@ -110,16 +108,17 @@ class DataTransferObjectNormalizer implements NormalizerInterface
     /**
      * @param \ReflectionProperty $property
      * @param mixed               $data
+     * @param bool                $normalizerSubEntities
      *
      * @return mixed
      */
-    protected function getValue(\ReflectionProperty $property, $data)
+    protected function getValue(\ReflectionProperty $property, $data, bool $normalizerSubEntities)
     {
         /** @var MapTo|null $mapToAnnotation */
         $mapToAnnotation = $this->annotationReader->getPropertyAnnotation($property, MapTo::class);
         $value = $property->getValue($data);
 
-        if ($mapToAnnotation === null) {
+        if ($normalizerSubEntities || $mapToAnnotation === null) {
             return $value;
         }
 
