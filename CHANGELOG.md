@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.4
+
+Bug fix:
+ * Relax ext-json version requirement to allow php 7.4 compatibility (ext-json versionning strategy changed to follow php version, so ext-json went from 1.5 to 7.4)
+
 ## 2.3.3
 
 New feature:
