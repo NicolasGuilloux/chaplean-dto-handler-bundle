@@ -12,6 +12,16 @@ Breaking Change:
 New feature:
  * Implementation of a DTO normalizer/denormalizer for Symfony's Serializer
 
+## 2.3.4
+
+Bug fix:
+ * Relax ext-json version requirement to allow php 7.4 compatibility (ext-json versionning strategy changed to follow php version, so ext-json went from 1.5 to 7.4)
+
+## 2.3.3
+
+New feature:
+ * Added a new parameter to the DtoUtility::updateEntityList() function. It allows to give the list of properties on which the comparison of the entities is made.
+
 ## 2.3.2
 
 Bug fix:
