@@ -103,4 +103,11 @@ final class DummyDataTransferObject implements DataTransferObjectInterface
      * @Field("another_property")
      */
     public $property9;
+
+    /**
+     * @var SubDataTransferObject
+     *
+     * @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject")
+     */
+    public $property10;
 }

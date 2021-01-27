@@ -201,7 +201,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -259,7 +259,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -319,7 +319,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $violations = new ConstraintViolationList();
 
@@ -413,7 +413,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->validator->shouldReceive('validate')->andReturn(new ConstraintViolationList());
 
@@ -469,7 +469,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
 
@@ -542,7 +542,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -606,7 +606,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -769,7 +769,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn(new ConstraintViolationList());
 
-        $this->manager->shouldReceive('apply')->times(4);
+        $this->manager->shouldReceive('apply')->times(5);
 
         $this->manager
             ->shouldReceive('apply')

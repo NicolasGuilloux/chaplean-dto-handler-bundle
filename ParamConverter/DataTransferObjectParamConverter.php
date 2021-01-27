@@ -129,9 +129,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param ParamConverter $configuration
      *
      * @return boolean
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function apply(Request $originalRequest, ParamConverter $configuration): bool
     {
@@ -139,6 +136,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         if (!$isSubDto) {
             $this->extractDataFromMultipartBody($originalRequest);
+        } else if ($originalRequest->attributes->get($configuration->getName()) === null) {
+            return false;
         }
 
         $request = self::cloneRequest($originalRequest);
