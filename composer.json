@@ -21,7 +21,7 @@
     },
     "require": {
         "php": ">=7.1",
-        "ext-json": "^1.5",
+        "ext-json": "*",
         "doctrine/annotations": "^1.6",
         "doctrine/orm": "^2.6",
         "sensio/framework-extra-bundle": "^5.0",
