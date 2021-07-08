@@ -247,7 +247,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         }
 
         if ($propertyConfigurationModel->isCollection()) {
-            $content = $content ?? [];
+            $content = ($content !== '') ? $content ?? [] : [];
 
             foreach ($content as $key => $value) {
                 $paramConfiguration = $this->autoConfigureOne(
