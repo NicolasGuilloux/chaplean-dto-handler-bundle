@@ -51,6 +51,10 @@ final class DummyDataTransferObject implements DataTransferObjectInterface
      * @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity")
      * @MapTo("keyname")
      */
+    #[
+        Assert\Type(DummyEntity::class),
+        MapTo('keyname')
+    ]
     public $property3;
 
     /**
@@ -100,8 +104,8 @@ final class DummyDataTransferObject implements DataTransferObjectInterface
      * @var DummyEntity
      *
      * @Assert\Date
-     * @Field("another_property")
      */
+    #[Field('another_property')]
     public $property9;
 
     /**

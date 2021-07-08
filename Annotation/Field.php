@@ -11,6 +11,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Annotation;
  * @Annotation
  * @Target({"PROPERTY"})
  */
+#[\Attribute(\Attribute::TARGET_PROPERTY)]
 class Field
 {
     /**
@@ -18,4 +19,9 @@ class Field
      * @var string
      */
     public $keyname;
+
+    public function __construct($keyname)
+    {
+        $this->keyname = $keyname['value'] ?? $keyname;
+    }
 }
