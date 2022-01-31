@@ -561,6 +561,10 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return $content;
         }
 
+        if (!is_array($content)) {
+            $content = \json_decode($content, true) ?? $content;
+        }
+
         foreach ($propertyConfigurationModel->getSubKeys() as $subKey) {
             $content = $content[$subKey] ?? $content;
         }
