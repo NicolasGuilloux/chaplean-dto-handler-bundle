@@ -13,6 +13,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\SubKey;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -46,6 +47,11 @@ class PropertyConfigurationExtractor
      * @var string
      */
     private $mapTo;
+
+    /**
+     * @var array
+     */
+    private $subKeys;
 
     /**
      * @var string
@@ -88,6 +94,8 @@ class PropertyConfigurationExtractor
         $dateAnnotation = AnnotationFetcher::get($property, Date::class);
         /** @var MapTo|null $mapToAnnotation */
         $mapToAnnotation = AnnotationFetcher::get($property, MapTo::class);
+        /** @var SubKey|null $subKeyAnnotation */
+        $subKeyAnnotation = AnnotationFetcher::get($property, SubKey::class);
         /** @var NotNull|null $notNullAnnotation */
         $notNullAnnotation = AnnotationFetcher::get($property, NotNull::class);
         /** @var NotBlank|null $notBlankAnnotation */
@@ -96,12 +104,13 @@ class PropertyConfigurationExtractor
         $this->name = $property->getName();
         $this->field = $fieldAnnotation !== null ? $fieldAnnotation->keyname : $property->getName();
         $this->mapTo = $mapToAnnotation !== null ? $mapToAnnotation->keyname : null;
+        $this->subKeys = $subKeyAnnotation !== null ? $subKeyAnnotation->keynames : [];
         $this->paramConverterAnnotation = $paramConverterAnnotation;
         $this->isOptional = ($notNullAnnotation === null) && ($notBlankAnnotation === null);
         $this->isCollection = ($arrayAnnotation !== null);
 
         if ($this->isCollection) {
-             $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
+            $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
         }
 
         if ($dateTimeAnnotation !== null || $dateAnnotation !== null) {
@@ -119,6 +128,14 @@ class PropertyConfigurationExtractor
     public function getMapTo(): ?string
     {
         return $this->mapTo;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSubKeys(): array
+    {
+        return $this->subKeys;
     }
 
     /**

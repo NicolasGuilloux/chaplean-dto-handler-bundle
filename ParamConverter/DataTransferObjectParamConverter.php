@@ -231,11 +231,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ?string $dtoName,
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
-        $field =  $propertyConfigurationModel->getField();
-        $content = $dtoName
-            ? ($request->attributes->get($dtoName)[$field] ?? null)
-            : self::getValueFromRequest($request, $field)
-        ;
+        $content = $this->getPropertyContent($request, $propertyConfigurationModel, $dtoName);
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
             $name = $prefix . '_#_' . $propertyConfigurationModel->getName();
@@ -550,5 +546,25 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $request->headers->set(static::SUB_REQUEST_HEADER, true);
 
         return $request;
+    }
+
+    /** @return mixed|null */
+    private function getPropertyContent(Request $request, PropertyConfigurationExtractor $propertyConfigurationModel, ?string $dtoName)
+    {
+        $field =  $propertyConfigurationModel->getField();
+        $content = $dtoName
+            ? ($request->attributes->get($dtoName)[$field] ?? null)
+            : self::getValueFromRequest($request, $field)
+        ;
+
+        if (empty($propertyConfigurationModel->getSubKeys())) {
+            return $content;
+        }
+
+        foreach ($propertyConfigurationModel->getSubKeys() as $subKey) {
+            $content = $content[$subKey] ?? $content;
+        }
+
+        return $content;
     }
 }
