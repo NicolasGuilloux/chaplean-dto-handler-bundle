@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 class DataTransferObjectDenormalizer implements DenormalizerInterface
 {
     public const VALIDATION_CONTEXT_KEY = '_dto_validation';
+    public const VALIDATION_GROUPS_CONTEXT_KEY = '_dto_validation_groups';
 
     /**
      * @var ParamConverterManager
@@ -56,7 +57,8 @@ class DataTransferObjectDenormalizer implements DenormalizerInterface
         $config->setIsOptional(false);
         $config->setConverter('data_transfer_object_converter');
         $config->setOptions([
-            'validate' => $context[self::VALIDATION_CONTEXT_KEY] ?? true
+            'validate' => $context[self::VALIDATION_CONTEXT_KEY] ?? true,
+            'groups'   => $context[self::VALIDATION_GROUPS_CONTEXT_KEY] ?? [],
         ]);
 
         $this->paramConverterManager->apply($request, $config);
