@@ -561,7 +561,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return $content;
         }
 
-        if (!is_array($content)) {
+        if (!is_array($content) && \is_string($content)) {
             $content = \json_decode($content, true) ?? $content;
         }
 
