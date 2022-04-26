@@ -14,6 +14,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 use Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor;
 use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver;
 use Doctrine\Common\Annotations\AnnotationException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
@@ -75,6 +76,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected $translator;
 
     /**
+     * @var AbstractClassResolver
+     */
+    protected $abstractClassResolver;
+
+    /**
      * @var ValidatorInterface
      */
     protected $validator;
@@ -86,6 +92,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param array                   $httpValidationGroups
      * @param ParamConverterManager   $paramConverterManager
      * @param TranslatorInterface     $translator
+     * @param AbstractClassResolver   $abstractClassResolver
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
@@ -93,6 +100,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         array $httpValidationGroups,
         ParamConverterManager $paramConverterManager,
         TranslatorInterface $translator,
+        AbstractClassResolver $abstractClassResolver,
         ValidatorInterface $validator = null
     ) {
         $this->bypassParamConverterExceptionClasses = $bypassParamConverterExceptionClasses;
@@ -100,6 +108,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
         $this->translator = $translator;
+        $this->abstractClassResolver = $abstractClassResolver;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         usort(
@@ -286,16 +295,30 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $name = $prefix . '_' . $propertyConfigurationModel->getName();
         $request->attributes->set($name, $value);
 
-        if ($propertyConfigurationModel->getType() === null) {
+        $type_ = $propertyConfigurationModel->getType();
+
+        if ($type_ === null) {
             return $paramConfiguration;
+        }
+
+        if (\class_exists($type_)) {
+            $reflectionClass = new \ReflectionClass($type_);
+
+            if ($reflectionClass->isAbstract()) {
+                $resolvedClass = $this->abstractClassResolver->getClassFor($type_, $request, $value);
+
+                if ($resolvedClass !== null) {
+                    $type_ = $resolvedClass;
+                }
+            }
         }
 
         $config = new ParamConverter([]);
         $config->setName($name);
-        $config->setClass($propertyConfigurationModel->getType());
+        $config->setClass($type_);
         $config->setIsOptional(true);
 
-        if (!\in_array($propertyConfigurationModel->getType(), $this->bypassParamConverterExceptionClasses, true)) {
+        if (!\in_array($type_, $this->bypassParamConverterExceptionClasses, true)) {
             $config->setIsOptional($propertyConfigurationModel->isOptional());
         }
 

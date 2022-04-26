@@ -11,6 +11,8 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\DependencyInjection;
 
+use Chaplean\Bundle\DtoHandlerBundle\DependencyInjection\CompilerPass\AbstractClassCompilerPass;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolverInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -42,6 +44,8 @@ class ChapleanDtoHandlerExtension extends Extension
 
         $container->setParameter(Configuration::CONFIG_NODE, $config);
         $this->setParameters($container, Configuration::CONFIG_NODE, $config);
+
+        $container->registerForAutoconfiguration(AbstractClassResolverInterface::class)->addTag(AbstractClassCompilerPass::TAG);
     }
 
     /**

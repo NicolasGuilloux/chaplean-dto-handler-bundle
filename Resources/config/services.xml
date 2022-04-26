@@ -16,11 +16,14 @@
             <argument key="$httpValidationGroups">%chaplean_dto_handler.http_code_validation_groups%</argument>
             <argument key="$paramConverterManager" type="service" id="sensio_framework_extra.converter.manager" />
             <argument key="$translator" type="service" id="translator" />
+            <argument key="$abstractClassResolver" type="service" id="Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver" />
             <argument key="$validator" type="service" id="validator" />
             <tag name="request.param_converter" converter="data_transfer_object_converter" />
         </service>
 
         <service id="Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints\UniqueEntityDataValidator" />
+
+        <service id="Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver" />
 
         <!-- Serializer -->
         <service id="Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectDenormalizer">

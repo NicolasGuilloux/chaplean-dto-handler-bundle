@@ -11,6 +11,8 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle;
 
+use Chaplean\Bundle\DtoHandlerBundle\DependencyInjection\CompilerPass\AbstractClassCompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
@@ -23,4 +25,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class ChapleanDtoHandlerBundle extends Bundle
 {
+    public function build(ContainerBuilder $container)
+    {
+        $container->addCompilerPass(new AbstractClassCompilerPass());
+    }
 }

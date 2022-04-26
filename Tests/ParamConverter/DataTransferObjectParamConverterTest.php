@@ -13,6 +13,7 @@ namespace Tests\Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver;
 use Doctrine\Common\Annotations\AnnotationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
@@ -60,6 +61,11 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     private $validator;
 
     /**
+     * @var AbstractClassResolver|MockInterface
+     */
+    private $abstractClassResolver;
+
+    /**
      * @return void
      */
     public function setUp(): void
@@ -69,6 +75,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $this->manager = \Mockery::mock(ParamConverterManager::class);
         $this->translator = \Mockery::mock(TranslatorInterface::class);
         $this->validator = \Mockery::mock(ValidatorInterface::class);
+        $this->abstractClassResolver = \Mockery::mock(AbstractClassResolver::class);
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
 
@@ -80,6 +87,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ],
             $this->manager,
             $this->translator,
+            $this->abstractClassResolver,
             $this->validator
         );
     }
