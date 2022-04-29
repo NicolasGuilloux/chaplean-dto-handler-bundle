@@ -15,6 +15,7 @@ use Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfiguratio
 use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver;
+use Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectDenormalizer;
 use Doctrine\Common\Annotations\AnnotationException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
@@ -164,7 +165,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         // Validate raw input only the top level DTO
         if (!$isSubDto) {
-            $object = $this->buildObject($request, $configuration, $uuid, true);
+            $object = $this->buildObject($request, $configuration, $uuid, false, true);
 
             $preValidationOptions = $options;
             $preValidationOptions['groups'] = ['dto_raw_input_validation'];
@@ -174,7 +175,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         $this->applyParamConverters($request, $config);
 
-        $object = $this->buildObject($request, $configuration, $uuid);
+        $object = $this->buildObject($request, $configuration, $uuid, !$isSubDto);
         $originalRequest->attributes->set($configuration->getName(), $object);
 
         // Validate only the top level DTO and load it to the real request
@@ -403,10 +404,20 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @return mixed
      */
-    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $keepAttributes = false)
+    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $populateExistingObject, bool $keepAttributes = false)
     {
+        $object = null;
         $class = $configuration->getClass();
-        $object = new $class();
+
+        if ($populateExistingObject) {
+            $options = (array) $configuration->getOptions();
+            $objectToPopulate = $options[DataTransferObjectDenormalizer::OBJECT_TO_POPULATE] ?? null;
+            $object = $objectToPopulate instanceof $class ? $objectToPopulate : null;
+        }
+
+        if ($object === null) {
+            $object = new $class();
+        }
 
         foreach ($request->attributes as $key => $attribute) {
             if (!\is_string($key)) {

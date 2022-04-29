@@ -19,6 +19,7 @@ class DataTransferObjectDenormalizer implements DenormalizerInterface
 {
     public const VALIDATION_CONTEXT_KEY = '_dto_validation';
     public const VALIDATION_GROUPS_CONTEXT_KEY = '_dto_validation_groups';
+    public const OBJECT_TO_POPULATE = 'object_to_populate';
 
     /**
      * @var ParamConverterManager
@@ -51,14 +52,17 @@ class DataTransferObjectDenormalizer implements DenormalizerInterface
             [$type => 'dto']
         );
 
+        $objectToPopulate = $context[self::OBJECT_TO_POPULATE] ?? null;
+
         $config = new ParamConverter([]);
         $config->setName('dto');
         $config->setClass($type);
         $config->setIsOptional(false);
         $config->setConverter('data_transfer_object_converter');
         $config->setOptions([
-            'validate' => $context[self::VALIDATION_CONTEXT_KEY] ?? true,
-            'groups'   => $context[self::VALIDATION_GROUPS_CONTEXT_KEY] ?? [],
+            'validate'               => $context[self::VALIDATION_CONTEXT_KEY] ?? true,
+            'groups'                 => $context[self::VALIDATION_GROUPS_CONTEXT_KEY] ?? [],
+            self::OBJECT_TO_POPULATE => $objectToPopulate instanceof $type ? $objectToPopulate : null,
         ]);
 
         $this->paramConverterManager->apply($request, $config);
