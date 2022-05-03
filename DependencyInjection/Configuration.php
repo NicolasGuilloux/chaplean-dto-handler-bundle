@@ -20,13 +20,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class Configuration implements ConfigurationInterface
 {
+    public const CONFIG_NODE = 'chaplean_dto_handler';
+
     /**
      * @return TreeBuilder
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('chaplean_dto_handler');
+        $treeBuilder = new TreeBuilder(self::CONFIG_NODE);
+        $rootNode = \method_exists(TreeBuilder::class, 'getRootNode')
+            ? $treeBuilder->getRootNode()
+            : $treeBuilder->root(self::CONFIG_NODE);
 
         $rootNode
             ->children()

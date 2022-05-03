@@ -1,5 +1,4 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 /*
  * This file is part of the DtoHandlerBundle package.
@@ -14,6 +13,7 @@ namespace Tests\Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver;
 use Doctrine\Common\Annotations\AnnotationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
@@ -22,10 +22,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterMana
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\DummyDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
@@ -61,6 +61,11 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     private $validator;
 
     /**
+     * @var AbstractClassResolver|MockInterface
+     */
+    private $abstractClassResolver;
+
+    /**
      * @return void
      */
     public function setUp(): void
@@ -70,6 +75,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $this->manager = \Mockery::mock(ParamConverterManager::class);
         $this->translator = \Mockery::mock(TranslatorInterface::class);
         $this->validator = \Mockery::mock(ValidatorInterface::class);
+        $this->abstractClassResolver = \Mockery::mock(AbstractClassResolver::class);
 
         PHPMockery::mock('Chaplean\Bundle\DtoHandlerBundle\ParamConverter', 'uniqid')->andReturn('hash');
 
@@ -81,6 +87,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ],
             $this->manager,
             $this->translator,
+            $this->abstractClassResolver,
             $this->validator
         );
     }
@@ -100,9 +107,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::setTaggedDtoServices()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassWithTag(): void
     {
@@ -126,9 +130,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassDto(): void
     {
@@ -145,9 +146,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsClassNotDto(): void
     {
@@ -164,9 +162,6 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::supports()
      *
      * @return void
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function testSupportsNotClass(): void
     {
@@ -214,7 +209,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -272,7 +267,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ]
         );
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
 
@@ -332,7 +327,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $violations = new ConstraintViolationList();
 
@@ -426,7 +421,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->attributes->set('0', 'UselessAttribute');
         $request->attributes->set('parasite_', 'UselessAttribute');
 
-        $this->manager->shouldReceive('apply')->times(7);
+        $this->manager->shouldReceive('apply')->times(8);
 
         $this->validator->shouldReceive('validate')->andReturn(new ConstraintViolationList());
 
@@ -482,7 +477,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
 
@@ -555,7 +550,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -581,7 +576,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -619,7 +614,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
         $request->request->set('property3', $entity);
         $request->request->set('property5', [$entity]);
 
-        $this->manager->shouldReceive('apply')->times(5);
+        $this->manager->shouldReceive('apply')->times(6);
 
         $violation = \Mockery::mock(ConstraintViolation::class);
         $violations = new ConstraintViolationList();
@@ -655,7 +650,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn($violations);
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -782,7 +777,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             )
             ->andReturn(new ConstraintViolationList());
 
-        $this->manager->shouldReceive('apply')->times(4);
+        $this->manager->shouldReceive('apply')->times(5);
 
         $this->manager
             ->shouldReceive('apply')
@@ -811,7 +806,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             ->with('dto_handler.entity_not_found', \Mockery::type('array'))
             ->andReturn('Not Found');
 
-        self::expectException(DataTransferObjectValidationException::class);
+        $this->expectException(DataTransferObjectValidationException::class);
 
         $this->dataTransferObjectParamConverter->apply($request, $configuration);
     }
@@ -819,12 +814,15 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
      */
     public function testSupportsJsonDataPayloadInMultipartBody(): void
     {
         $tmp = sys_get_temp_dir();
 
-        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'wb');
         $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
         fwrite($jsonData, json_encode([
             'property1' => 'Property 1',
@@ -843,7 +841,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'application/json'
         );
 
-        $jsonDataOverride = fopen(tempnam($tmp, 'jsonDataOverride'), 'w');
+        $jsonDataOverride = fopen(tempnam($tmp, 'jsonDataOverride'), 'wb');
         $jsonDataOverridePath = stream_get_meta_data($jsonDataOverride)['uri'];
         fwrite($jsonDataOverride, json_encode(['property1' => 'Overridden Property 1']));
         fclose($jsonDataOverride);
@@ -853,7 +851,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'text/json'
         );
 
-        $otherIndependentFile = fopen(tempnam($tmp, 'file3'), 'w');
+        $otherIndependentFile = fopen(tempnam($tmp, 'file3'), 'wb');
         $otherIndependentFilePath = stream_get_meta_data($otherIndependentFile)['uri'];
         fwrite($otherIndependentFile, json_encode(['property1' => 'Ignored Property 1']));
         fclose($otherIndependentFile);
@@ -863,7 +861,7 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
             'image/png'
         );
 
-        $invalidJsonFile = fopen(tempnam($tmp, 'invalidJsonFile'), 'w');
+        $invalidJsonFile = fopen(tempnam($tmp, 'invalidJsonFile'), 'wb');
         $invalidJsonFilePath = stream_get_meta_data($invalidJsonFile)['uri'];
         fwrite($invalidJsonFile, '}{');
         fclose($invalidJsonFile);
@@ -916,12 +914,15 @@ class DataTransferObjectParamConverterTest extends MockeryTestCase
     /**
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::apply()
      * @covers \Chaplean\Bundle\DtoHandlerBundle\ParamConverter\DataTransferObjectParamConverter::extractDataFromMultipartBody()
+     *
+     * @throws \ReflectionException
+     * @throws AnnotationException
      */
     public function testIgnoresFilesWhenNotMultipartBody(): void
     {
         $tmp = sys_get_temp_dir();
 
-        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'w');
+        $jsonData = fopen(tempnam($tmp, 'jsonData'), 'wb');
         $jsonDataPath = stream_get_meta_data($jsonData)['uri'];
         fwrite($jsonData, json_encode([
             'property1' => 'Property 1',

@@ -11,13 +11,12 @@
 
 namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO;
 
-use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
+use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity;
-use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
 
 /**
  * Class DummyDataTransferObject
@@ -25,10 +24,8 @@ use Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject;
  * @package   Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO
  * @author    Nicolas - Chaplean <nicolas@chaplean.coop>
  * @copyright 2014 - 2019 Chaplean (https://www.chaplean.coop)
- *
- * @DTO
  */
-final class DummyDataTransferObject
+final class DummyDataTransferObject implements DataTransferObjectInterface
 {
     /**
      * @var DummyEntity
@@ -54,6 +51,10 @@ final class DummyDataTransferObject
      * @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\Entity\DummyEntity")
      * @MapTo("keyname")
      */
+    #[
+        Assert\Type(DummyEntity::class),
+        MapTo('keyname')
+    ]
     public $property3;
 
     /**
@@ -103,7 +104,14 @@ final class DummyDataTransferObject
      * @var DummyEntity
      *
      * @Assert\Date
-     * @Field("another_property")
      */
+    #[Field('another_property')]
     public $property9;
+
+    /**
+     * @var SubDataTransferObject
+     *
+     * @Assert\Type("Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO\SubDataTransferObject")
+     */
+    public $property10;
 }

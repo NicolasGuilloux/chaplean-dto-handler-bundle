@@ -11,11 +11,20 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\DependencyInjection;
 
+use Chaplean\Bundle\DtoHandlerBundle\DependencyInjection\CompilerPass\AbstractClassCompilerPass;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolverInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
+/**
+ * Class ChapleanDtoHandlerExtension
+ *
+ * @package   Chaplean\Bundle\DtoHandlerBundle\DependencyInjection
+ * @author    Nicolas Guilloux <nguilloux@richcongress.com>
+ * @copyright 2014 - 2020 RichCongress (https://www.richcongress.com)
+ */
 class ChapleanDtoHandlerExtension extends Extension
 {
     /**
@@ -33,8 +42,10 @@ class ChapleanDtoHandlerExtension extends Extension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
-        $container->setParameter('chaplean_dto_handler', $config);
-        $this->setParameters($container, 'chaplean_dto_handler', $config);
+        $container->setParameter(Configuration::CONFIG_NODE, $config);
+        $this->setParameters($container, Configuration::CONFIG_NODE, $config);
+
+        $container->registerForAutoconfiguration(AbstractClassResolverInterface::class)->addTag(AbstractClassCompilerPass::TAG);
     }
 
     /**

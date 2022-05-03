@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0
+
+Breaking Change:
+ * The DTO annotation has been removed.
+ * You now need to implement the `DataTransferObjectInterface` to your DTO
+ * `DtoUtility::loadArrayToDto` is now available through the Symfony Serializer using the denormalizer.
+ * `DtoUtility::updateEntityList` is now available at `EntityUtils::updateCollection`
+ * You no longer need to declare the DTO as a service
+ 
+New feature:
+ * Implementation of a DTO normalizer/denormalizer for Symfony's Serializer
+
 ## 2.3.4
 
 Bug fix:

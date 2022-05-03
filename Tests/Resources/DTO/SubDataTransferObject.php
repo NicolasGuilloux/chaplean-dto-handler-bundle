@@ -2,7 +2,7 @@
 
 namespace Tests\Chaplean\Bundle\DtoHandlerBundle\Resources\DTO;
 
-use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
+use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -11,10 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @package   Chaplean\Bundle\DtoHandlerBundle\Tests\Resources\DTO
  * @author    Nicolas - Chaplean <nicolas@chaplean.coop>
  * @copyright 2014 - 2019 Chaplean (https://www.chaplean.coop)
- *
- * @DTO
  */
-final class SubDataTransferObject
+final class SubDataTransferObject implements DataTransferObjectInterface
 {
     /**
      * @var string

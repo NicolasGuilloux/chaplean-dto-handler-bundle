@@ -5,8 +5,12 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Tests\EventListener;
 use Chaplean\Bundle\DtoHandlerBundle\EventListener\DataTransferObjectValidationExceptionSubscriber;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -60,15 +64,22 @@ class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCas
     public function testOnKernelExceptionWithAnotherException(): void
     {
         $exception = new BadRequestHttpException();
+        $kernel = new HttpKernel(
+            new EventDispatcher(),
+            new ControllerResolver()
+        );
 
-        $event = \Mockery::mock(GetResponseForExceptionEvent::class);
-        $event->shouldNotReceive('setResponse');
-        $event->shouldReceive('getException')
-            ->once()
-            ->andReturn($exception);
+        $event = new ExceptionEvent(
+            $kernel,
+            new Request(),
+            0,
+            $exception
+        );
 
         $this->dataTransferObjectValidationExceptionSubscriber
             ->onKernelException($event);
+
+        self::assertNull($event->getResponse());
     }
 
     /**
@@ -90,16 +101,20 @@ class DataTransferObjectValidationExceptionSubscriberTest extends MockeryTestCas
 
         $exception = new DataTransferObjectValidationException($violations);
 
-        $event = \Mockery::mock(GetResponseForExceptionEvent::class);
+        $kernel = new HttpKernel(
+            new EventDispatcher(),
+            new ControllerResolver()
+        );
 
-        $event->shouldReceive('getException')
-            ->once()
-            ->andReturn($exception);
+        $event = new ExceptionEvent(
+            $kernel,
+            new Request(),
+            0,
+            $exception
+        );
 
-        $event->shouldReceive('setResponse')
-            ->once();
+        $this->dataTransferObjectValidationExceptionSubscriber->onKernelException($event);
 
-        $this->dataTransferObjectValidationExceptionSubscriber
-            ->onKernelException($event);
+        self::assertNotNull($event->getResponse());
     }
 }

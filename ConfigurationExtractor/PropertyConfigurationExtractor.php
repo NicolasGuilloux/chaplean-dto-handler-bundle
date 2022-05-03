@@ -13,6 +13,7 @@ namespace Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor;
 
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\Field;
 use Chaplean\Bundle\DtoHandlerBundle\Annotation\MapTo;
+use Chaplean\Bundle\DtoHandlerBundle\Annotation\SubKey;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -48,6 +49,11 @@ class PropertyConfigurationExtractor
     private $mapTo;
 
     /**
+     * @var array
+     */
+    private $subKeys;
+
+    /**
      * @var string
      */
     private $type;
@@ -71,41 +77,40 @@ class PropertyConfigurationExtractor
      * PropertyConfigurationModel constructor.
      *
      * @param \ReflectionProperty $property
-     *
-     * @throws AnnotationException
      */
     public function __construct(\ReflectionProperty $property)
     {
-        $annotationReader = new AnnotationReader();
-
-        /** @var Field $fieldAnnotation */
-        $fieldAnnotation = $annotationReader->getPropertyAnnotation($property, Field::class);
-        /** @var ParamConverter $paramConverterAnnotation */
-        $paramConverterAnnotation = $annotationReader->getPropertyAnnotation($property, ParamConverter::class);
-        /** @var All $arrayAnnotation */
-        $arrayAnnotation = $annotationReader->getPropertyAnnotation($property, All::class);
-        /** @var Type $typeAnnotation */
-        $typeAnnotation = $annotationReader->getPropertyAnnotation($property, Type::class);
-        /** @var DateTime $dateTimeAnnotation */
-        $dateTimeAnnotation = $annotationReader->getPropertyAnnotation($property, DateTime::class);
-        /** @var Date $dateAnnotation */
-        $dateAnnotation = $annotationReader->getPropertyAnnotation($property, Date::class);
-        /** @var MapTo $mapToAnnotation */
-        $mapToAnnotation = $annotationReader->getPropertyAnnotation($property, MapTo::class);
-        /** @var NotNull $notNullAnnotation */
-        $notNullAnnotation = $annotationReader->getPropertyAnnotation($property, NotNull::class);
-        /** @var NotBlank $notBlankAnnotation */
-        $notBlankAnnotation = $annotationReader->getPropertyAnnotation($property, NotBlank::class);
+        /** @var Field|null $fieldAnnotation */
+        $fieldAnnotation = AnnotationFetcher::get($property, Field::class);
+        /** @var ParamConverter|null $paramConverterAnnotation */
+        $paramConverterAnnotation = AnnotationFetcher::get($property, ParamConverter::class);
+        /** @var All|null $arrayAnnotation */
+        $arrayAnnotation = AnnotationFetcher::get($property, All::class);
+        /** @var Type|null $typeAnnotation */
+        $typeAnnotation = AnnotationFetcher::get($property, Type::class);
+        /** @var DateTime|null $dateTimeAnnotation */
+        $dateTimeAnnotation = AnnotationFetcher::get($property, DateTime::class);
+        /** @var Date|null $dateAnnotation */
+        $dateAnnotation = AnnotationFetcher::get($property, Date::class);
+        /** @var MapTo|null $mapToAnnotation */
+        $mapToAnnotation = AnnotationFetcher::get($property, MapTo::class);
+        /** @var SubKey|null $subKeyAnnotation */
+        $subKeyAnnotation = AnnotationFetcher::get($property, SubKey::class);
+        /** @var NotNull|null $notNullAnnotation */
+        $notNullAnnotation = AnnotationFetcher::get($property, NotNull::class);
+        /** @var NotBlank|null $notBlankAnnotation */
+        $notBlankAnnotation = AnnotationFetcher::get($property, NotBlank::class);
 
         $this->name = $property->getName();
         $this->field = $fieldAnnotation !== null ? $fieldAnnotation->keyname : $property->getName();
         $this->mapTo = $mapToAnnotation !== null ? $mapToAnnotation->keyname : null;
+        $this->subKeys = $subKeyAnnotation !== null ? $subKeyAnnotation->keynames : [];
         $this->paramConverterAnnotation = $paramConverterAnnotation;
         $this->isOptional = ($notNullAnnotation === null) && ($notBlankAnnotation === null);
         $this->isCollection = ($arrayAnnotation !== null);
 
         if ($this->isCollection) {
-             $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
+            $typeAnnotation = $this->findTypeConstraint($arrayAnnotation) ?? $typeAnnotation;
         }
 
         if ($dateTimeAnnotation !== null || $dateAnnotation !== null) {
@@ -123,6 +128,14 @@ class PropertyConfigurationExtractor
     public function getMapTo(): ?string
     {
         return $this->mapTo;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSubKeys(): array
+    {
+        return $this->subKeys;
     }
 
     /**

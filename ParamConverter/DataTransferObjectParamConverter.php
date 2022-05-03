@@ -11,11 +11,12 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\ParamConverter;
 
-use Chaplean\Bundle\DtoHandlerBundle\Annotation\DTO;
 use Chaplean\Bundle\DtoHandlerBundle\ConfigurationExtractor\PropertyConfigurationExtractor;
+use Chaplean\Bundle\DtoHandlerBundle\DataTransferObject\DataTransferObjectInterface;
 use Chaplean\Bundle\DtoHandlerBundle\Exception\DataTransferObjectValidationException;
+use Chaplean\Bundle\DtoHandlerBundle\Resolver\AbstractClassResolver;
+use Chaplean\Bundle\DtoHandlerBundle\Serializer\DataTransferObjectDenormalizer;
 use Doctrine\Common\Annotations\AnnotationException;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterManager;
@@ -27,10 +28,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
-use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class DataTransferObjectParamConverter.
@@ -76,6 +77,11 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
     protected $translator;
 
     /**
+     * @var AbstractClassResolver
+     */
+    protected $abstractClassResolver;
+
+    /**
      * @var ValidatorInterface
      */
     protected $validator;
@@ -87,6 +93,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param array                   $httpValidationGroups
      * @param ParamConverterManager   $paramConverterManager
      * @param TranslatorInterface     $translator
+     * @param AbstractClassResolver   $abstractClassResolver
      * @param ValidatorInterface|null $validator
      */
     public function __construct(
@@ -94,6 +101,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         array $httpValidationGroups,
         ParamConverterManager $paramConverterManager,
         TranslatorInterface $translator,
+        AbstractClassResolver $abstractClassResolver,
         ValidatorInterface $validator = null
     ) {
         $this->bypassParamConverterExceptionClasses = $bypassParamConverterExceptionClasses;
@@ -101,6 +109,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $this->validator = $validator;
         $this->taggedDtoClasses = [];
         $this->translator = $translator;
+        $this->abstractClassResolver = $abstractClassResolver;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
         usort(
@@ -130,9 +139,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param ParamConverter $configuration
      *
      * @return boolean
-     *
-     * @throws AnnotationException
-     * @throws \ReflectionException
      */
     public function apply(Request $originalRequest, ParamConverter $configuration): bool
     {
@@ -140,6 +146,8 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         if (!$isSubDto) {
             $this->extractDataFromMultipartBody($originalRequest);
+        } else if ($originalRequest->attributes->get($configuration->getName()) === null) {
+            return false;
         }
 
         $request = self::cloneRequest($originalRequest);
@@ -157,7 +165,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         // Validate raw input only the top level DTO
         if (!$isSubDto) {
-            $object = $this->buildObject($request, $configuration, $uuid, true);
+            $object = $this->buildObject($request, $configuration, $uuid, false, true);
 
             $preValidationOptions = $options;
             $preValidationOptions['groups'] = ['dto_raw_input_validation'];
@@ -167,7 +175,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
 
         $this->applyParamConverters($request, $config);
 
-        $object = $this->buildObject($request, $configuration, $uuid);
+        $object = $this->buildObject($request, $configuration, $uuid, !$isSubDto);
         $originalRequest->attributes->set($configuration->getName(), $object);
 
         // Validate only the top level DTO and load it to the real request
@@ -182,9 +190,6 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      * @param ParamConverter $configuration
      *
      * @return boolean
-     *
-     * @throws \ReflectionException
-     * @throws AnnotationException
      */
     public function supports(ParamConverter $configuration): bool
     {
@@ -194,16 +199,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
             return false;
         }
 
-        if (\in_array($class, $this->taggedDtoClasses, true)) {
-            return true;
-        }
-
-        $propertyReflectionClass = new \ReflectionClass($class);
-
-        $annotationReader = new AnnotationReader();
-        $typeAnnotation = $annotationReader->getClassAnnotation($propertyReflectionClass, DTO::class);
-
-        return $typeAnnotation !== null;
+        return is_subclass_of($class, DataTransferObjectInterface::class);
     }
 
     /**
@@ -245,11 +241,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         ?string $dtoName,
         PropertyConfigurationExtractor $propertyConfigurationModel
     ): array {
-        $field =  $propertyConfigurationModel->getField();
-        $content = $dtoName
-            ? ($request->attributes->get($dtoName)[$field] ?? null)
-            : self::getValueFromRequest($request, $field)
-        ;
+        $content = $this->getPropertyContent($request, $propertyConfigurationModel, $dtoName);
 
         if ($propertyConfigurationModel->getParamConverterAnnotation() !== null) {
             $name = $prefix . '_#_' . $propertyConfigurationModel->getName();
@@ -261,7 +253,7 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         }
 
         if ($propertyConfigurationModel->isCollection()) {
-            $content = $content ?? [];
+            $content = ($content !== '') ? $content ?? [] : [];
 
             foreach ($content as $key => $value) {
                 $paramConfiguration = $this->autoConfigureOne(
@@ -304,16 +296,30 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $name = $prefix . '_' . $propertyConfigurationModel->getName();
         $request->attributes->set($name, $value);
 
-        if ($propertyConfigurationModel->getType() === null) {
+        $type_ = $propertyConfigurationModel->getType();
+
+        if ($type_ === null) {
             return $paramConfiguration;
+        }
+
+        if (\class_exists($type_)) {
+            $reflectionClass = new \ReflectionClass($type_);
+
+            if ($reflectionClass->isAbstract()) {
+                $resolvedClass = $this->abstractClassResolver->getClassFor($type_, $request, $value);
+
+                if ($resolvedClass !== null) {
+                    $type_ = $resolvedClass;
+                }
+            }
         }
 
         $config = new ParamConverter([]);
         $config->setName($name);
-        $config->setClass($propertyConfigurationModel->getType());
+        $config->setClass($type_);
         $config->setIsOptional(true);
 
-        if (!\in_array($propertyConfigurationModel->getType(), $this->bypassParamConverterExceptionClasses, true)) {
+        if (!\in_array($type_, $this->bypassParamConverterExceptionClasses, true)) {
             $config->setIsOptional($propertyConfigurationModel->isOptional());
         }
 
@@ -398,10 +404,20 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
      *
      * @return mixed
      */
-    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $keepAttributes = false)
+    protected function buildObject(Request $request, ParamConverter $configuration, string $prefix, bool $populateExistingObject, bool $keepAttributes = false)
     {
+        $object = null;
         $class = $configuration->getClass();
-        $object = new $class();
+
+        if ($populateExistingObject) {
+            $options = (array) $configuration->getOptions();
+            $objectToPopulate = $options[DataTransferObjectDenormalizer::OBJECT_TO_POPULATE] ?? null;
+            $object = $objectToPopulate instanceof $class ? $objectToPopulate : null;
+        }
+
+        if ($object === null) {
+            $object = new $class();
+        }
 
         foreach ($request->attributes as $key => $attribute) {
             if (!\is_string($key)) {
@@ -564,5 +580,29 @@ class DataTransferObjectParamConverter implements ParamConverterInterface
         $request->headers->set(static::SUB_REQUEST_HEADER, true);
 
         return $request;
+    }
+
+    /** @return mixed|null */
+    private function getPropertyContent(Request $request, PropertyConfigurationExtractor $propertyConfigurationModel, ?string $dtoName)
+    {
+        $field =  $propertyConfigurationModel->getField();
+        $content = $dtoName
+            ? ($request->attributes->get($dtoName)[$field] ?? null)
+            : self::getValueFromRequest($request, $field)
+        ;
+
+        if (empty($propertyConfigurationModel->getSubKeys())) {
+            return $content;
+        }
+
+        if (!is_array($content) && \is_string($content)) {
+            $content = \json_decode($content, true) ?? $content;
+        }
+
+        foreach ($propertyConfigurationModel->getSubKeys() as $subKey) {
+            $content = $content[$subKey] ?? $content;
+        }
+
+        return $content;
     }
 }

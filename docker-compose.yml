@@ -2,8 +2,7 @@ version: '3.3'
 services:
     application:
         container_name: dto-handler_bundle_app
-        image: richcongress/php:7.3
+        image: richcongress/php:8.0
         volumes:
             - .:/app:rw,cached
             - ~/.composer:/home/application/.composer:cached
-            - ./private/ssh:/home/application/.ssh:cached

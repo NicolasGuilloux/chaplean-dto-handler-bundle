@@ -3,7 +3,7 @@
 namespace Chaplean\Bundle\DtoHandlerBundle\Annotation;
 
 /**
- * Class Field
+ * Class SubKey
  *
  * @package   Chaplean\Bundle\DtoHandlerBundle\Annotation
  * @author    Nicolas Guilloux <nicolas.guilloux@protonmail.com>
@@ -12,16 +12,16 @@ namespace Chaplean\Bundle\DtoHandlerBundle\Annotation;
  * @Target({"PROPERTY"})
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-class Field
+class SubKey
 {
     /**
      * @Required
-     * @var string
+     * @var array
      */
-    public $keyname;
+    public $keynames = [];
 
     public function __construct($keyname)
     {
-        $this->keyname = $keyname['value'] ?? $keyname;
+        $this->keynames = (array) ($keyname['value'] ?? $keyname);
     }
 }

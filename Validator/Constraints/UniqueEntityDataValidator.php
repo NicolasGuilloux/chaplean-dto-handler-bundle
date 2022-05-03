@@ -11,9 +11,8 @@
 
 namespace Chaplean\Bundle\DtoHandlerBundle\Validator\Constraints;
 
-use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -100,7 +99,7 @@ class UniqueEntityDataValidator extends ConstraintValidator
      *
      * @return array|null
      */
-    private static function buildCriteria(ObjectRepository $repository, $dto, UniqueEntityData $constraint): ?array
+    private static function buildCriteria($repository, $dto, UniqueEntityData $constraint): ?array
     {
         $criteria = [];
 
