@@ -36,8 +36,8 @@ final class AbstractClassCompilerPass implements CompilerPassInterface
         usort(
             $references,
             static function (Reference $left, Reference $right): int {
-                $leftPriority = $left::getPriority();
-                $rightPriority = $right::getPriority();
+                $leftPriority = ((string) $left)::getPriority();
+                $rightPriority = ((string) $right)::getPriority();
 
                 if ($leftPriority === $rightPriority) {
                     return 0;
